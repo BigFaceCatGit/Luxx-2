@@ -23,7 +23,7 @@
     <ProjectGuid>{D0136460-7F13-45C5-B920-4E580AF6B870}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>luxx20</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -143,18 +143,50 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CrossMapping.h" />
+    <ClInclude Include="enums.h" />
+    <ClInclude Include="Hack.h" />
+    <ClInclude Include="Hooking.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="menuFeatures.h" />
+    <ClInclude Include="menuBase.h" />
+    <ClInclude Include="menuVariables.h" />
+    <ClInclude Include="nativeCaller.h" />
+    <ClInclude Include="NativeInvoker.h" />
+    <ClInclude Include="natives.h" />
+    <ClInclude Include="Pattern.h" />
+    <ClInclude Include="reclass.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="shader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="types.h" />
+    <ClInclude Include="vehicleStructs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CrossMapping.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Hack.cpp" />
+    <ClCompile Include="Hooking.cpp" />
+    <ClCompile Include="Log.cpp" />
     <ClCompile Include="luxx2.0.cpp" />
+    <ClCompile Include="menuBase.cpp" />
+    <ClCompile Include="menuFeatures.cpp" />
+    <ClCompile Include="NativeInvoker.cpp" />
+    <ClCompile Include="Pattern.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="luxx2.0.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="D:\Source\FW1FontWrapper\FW1FontWrapper.lib" />
+    <Library Include="Poly\capstone.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

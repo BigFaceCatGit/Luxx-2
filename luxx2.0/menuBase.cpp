@@ -529,7 +529,7 @@ namespace NativeMenu {
 		return false;
 	}
 
-	bool NativeMenu::bdeletevehicle = true;
+	/*bool NativeMenu::bdeletevehicle = true;
 	bool NativeMenu::bspawninvehicle = true;
 
 	int SpawnVehicle(Hash model, Vector3 pos)
@@ -594,7 +594,7 @@ namespace NativeMenu {
 		NETWORK::NETWORK_FADE_IN_ENTITY(vehicle, TRUE);
 
 		return vehicle;
-	}
+	}*/
 
 	bool CMenu::Vehicle(std::string name, Hash model)
 	{
@@ -612,6 +612,53 @@ namespace NativeMenu {
 			}
 
 			Features::CVehicle::spawn(model, PLAYER::PLAYER_PED_ID(), 1, 1, 0);
+			return true;
+		}
+		return false;
+	}
+
+	bool CMenu::aPlayer(char *name, Player player, void* submenu)
+	{
+		char buf[50], ibuf[50];
+		if (player == PLAYER::PLAYER_ID()) {
+			snprintf(buf, sizeof(buf), "%s~g~ [SELF] ", name);
+			Option(buf, { "~g~SELF" });
+		}
+		else if (NETWORK::NETWORK_PLAYER_IS_ROCKSTAR_DEV(player)) {
+			snprintf(buf, sizeof(buf), "%s~r~ [ROCKSTAR]", name);
+			Option(buf, { "~r~ROCKSTAR ADMIN" });
+		}
+		else if (NETWORK::NETWORK_GET_HOST_OF_SCRIPT("Freemode", -1, 0) == player) {
+			snprintf(buf, sizeof(buf), "%s~y~ [HOST]", name);
+			Option(buf, { "~y~SESSION HOST" });
+		}
+		else if (Features::CUtil::isPlayerFriend(player)) {
+			snprintf(buf, sizeof(buf), "%s~b~ [FRIEND] ", name);
+			Option(buf, { "~b~FRIEND " });
+		}
+		else
+			Option(name, { });
+
+		if (currentOption == optionCount && optionPress) {
+			/*sel.ID = player;
+			sel.name = PLAYER::GET_PLAYER_NAME(player);
+			sel.pedID = PLAYER::GET_PLAYER_PED_SCRIPT_INDEX(player);
+			sel.veh = -1;
+			sel.lastVeh = false;
+			if (PED::IS_PED_IN_ANY_VEHICLE(sel.pedID, 0))
+				sel.veh = PED::GET_VEHICLE_PED_IS_USING(sel.pedID); //Current Vehicle
+			else {
+				sel.veh = PED::GET_VEHICLE_PED_IS_IN(sel.pedID, TRUE);
+				sel.lastVeh = true; //Last Vehicle
+			}
+			sel.coords = PED::GET_PED_BONE_COORDS(sel.pedID, SKEL_ROOT, 0, 0, 0);
+			sel.heading = ENTITY::GET_ENTITY_HEADING(sel.pedID);
+			sel.entity = sel.veh != NULL && !sel.lastVeh ? sel.veh : sel.pedID;
+			sel.sName = PLAYER::GET_PLAYER_NAME(player);
+			changeSubmenu(Player_Options);*/
+			resetButtonState();
+			changeSubmenu(submenu);
+
 			return true;
 		}
 		return false;
@@ -694,6 +741,36 @@ namespace NativeMenu {
 		CONTROLS::DISABLE_CONTROL_ACTION(2, ControlReplayStartStopRecording, true);
 		CONTROLS::DISABLE_CONTROL_ACTION(2, ControlInteractionMenu, true);
 		CONTROLS::DISABLE_CONTROL_ACTION(2, ControlSaveReplayClip, true);
+	}
+	
+	int CMenu::getOption() {
+		return currentOption;
+	}
+
+	std::string CMenu::show_keyboard(char* title_id, char* prepopulated_text)
+	{
+		DWORD time = GetTickCount() + 400;
+		while (GetTickCount() < time)
+		{
+			WAIT(0);
+		}
+
+		GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(true, (title_id == NULL ? "HUD_TITLE" : title_id), "", (prepopulated_text == NULL ? "" : prepopulated_text), "", "", "", 64);
+
+		while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0)
+		{
+			WAIT(0);
+		}
+
+		std::stringstream ss;
+		if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT())
+		{
+			return std::string("");
+		}
+		else
+		{
+			return std::string(GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT());
+		}
 	}
 
 	void CMenu::DrawMenu()
@@ -851,5 +928,6 @@ namespace NativeMenu {
 			ClosedMenuMonitor();
 		}
 	}
+
 }
 

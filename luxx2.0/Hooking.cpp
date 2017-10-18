@@ -36,32 +36,41 @@ void CHooking::init()
 	CLog::Message("Hooks are done.");
 }
 
+void __stdcall script(LPVOID lpParameter)
+{
+	try {
+		while (1) {
+			CHack::mainLoop();
+			SwitchToFiber(mainFiber);
+		}
+	}
+	catch (...)
+	{
+		CLog::Fatal("script failed");
+	}
+}
+
 /* For the love of god please change this */
 void CHooking::onTick()
 {
-	if (mainFiber == nullptr)
+	if (mainFiber == nullptr) {
 		mainFiber = ConvertThreadToFiber(nullptr);
+
+		if (mainFiber == nullptr)
+		{
+			mainFiber = GetCurrentFiber();
+		}
+	}
 
 	if (timeGetTime() < wakeAt)
 		return;
 
+	/* grabbed from sudo cause I got pissed */
 	static HANDLE scriptFiber;
 	if (scriptFiber)
 		SwitchToFiber(scriptFiber);
-	else {
-		try
-		{
-			CHack::mainLoop();
-		}
-		catch (const std::exception& e)
-		{
-			CLog::Error((char*)e.what());
-		}
-		catch (...)
-		{
-			CLog::Error("Unknown error.");
-		}
-	}
+	else
+		scriptFiber = CreateFiber(NULL, script, nullptr);
 }
 
 typedef void(__cdecl* APP_HAS_LINKED_SOCIAL_CLUB_ACCOUNT)();

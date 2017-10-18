@@ -110,7 +110,7 @@ static struct {
 static struct {
 	std::string Name;
 	Hash Hash;
-} SuperTestHash[26] = {
+} SuperHash[26] = {
 
 	{ "Pfister 811", VEHICLE_PFISTER },
 	{ "Adder", VEHICLE_ADDER },

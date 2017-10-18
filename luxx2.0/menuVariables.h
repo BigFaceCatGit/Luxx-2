@@ -22,10 +22,15 @@ namespace Variables
 		bool pCollision = false;
 	};
 
-	namespace CNetwork
+	class CNetwork
 	{
-		static bool boxESP = false;
-	}
+	public:
+		bool boxESP = false;
+		bool showTalking = false;
+		bool drawMarker = false;
+		//bool boxESP = false;
+
+	};
 
 	class CWeapon
 	{
@@ -50,6 +55,14 @@ namespace Variables
 		bool vehSpawnDelete = true;
 		bool vehWrapInSpawned = true;
 		bool vehSpawnMaxed = false;
+		float accelMult = 1.f;
+		bool handleTest;
+	};
+
+	class CMisc {
+	public:
+		bool printFps = false;
+		bool printSpeed = false;
 	};
 }
 

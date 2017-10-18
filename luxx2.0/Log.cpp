@@ -73,7 +73,7 @@ bool CLog::Init(std::string szDir)
 	char	time[128] = {};
 
 	getTimeFile(time);
-	std::string szFile = "ALPHA-1.1.0 ";
+	std::string szFile = "LUXX-2.0.1 ";
 	szFile += time;
 	szFile += ".log";
 

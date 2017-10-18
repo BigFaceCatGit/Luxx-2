@@ -91,7 +91,22 @@ namespace Features {
 	class CNetwork
 	{
 	public:
-		static void ESP();
+		static void ESP(Player target, Ped playerPed, NativeMenu::RGBA bannerRect);
+		static void controlID(Entity netid);
+		static void controlEnt(Entity entity);
+		static void dropWeapon(char * weapon, Ped recievingPed);
+		static void kickPlayer(Player player);
+		static void attackCops(Ped playerPed);
+		static void attckSwat(Ped playerPed);
+		static void attackJesus(Ped playerPed);
+		static void attackSwatRiot(Ped playerPed);
+		static void sendCops(Ped playerPed);
+		static void attackTanks(Ped playerPed);
+		static void shootPed(Player selectedPlayer);
+		static void soloSesh(int lagTime);
+		static void killAll();
+		static void loop_drawMarker(Player player, NativeMenu::RGBA bannerRect);
+		static void whosTalking();
 	};
 
 	class CWeapon
@@ -120,6 +135,7 @@ namespace Features {
 		static Ped clonePed(Ped ped);
 		static void applyForceToEntity(Entity e, float x, float y, float z);
 	};
+
 	class CVehicle
 	{
 	public:
@@ -134,13 +150,17 @@ namespace Features {
 		static Vehicle spawn(char * toSpawn, Ped playerPed, bool vDelete, bool vWrap, bool vMax);
 		static Vehicle clone(Ped ped);
 		static bool deleteVehicle(Ped ped);
+		static void setPlateText(Vehicle vehicle);
+		static void manualSelect(bool playerType);
 	};
+
 	class CUtil
 	{
 	public:
 		struct RGBA {
 			int r, g, b, a;
 		};
+
 		static Hash $(std::string str);
 		static void notifyMap(std::string msg, BOOL blink);
 		static void notifyError(std::string msg);
@@ -173,6 +193,18 @@ namespace Features {
 		static void loadKeyBinds(bool notify, NativeMenu::CMenu &menu);
 		static void loadSpeedo(bool notify, NativeMenu::CMenu &menu);
 		static void loadConfig(bool notify, NativeMenu::CMenu &menu);
+		static double CalcAverageTick();
+		static float CalcSpeed(bool mphOut, Vehicle veh);
+		static void printFPS();
+		static void printSpeed();
+		static bool isPlayerFriend(Player player);
+		static Vector3 getBlipMarker();
+		static void tpToMarker();
+		static void tpToObjective();
+		static void tpToCar();
+		static void tpToCoords(float x, float y, float z);
+		static void tpToCoords(Entity ent, Vector3 coords);
+		static void tpToPlayer(Ped playerPed);
 	};
 }
 

@@ -1101,7 +1101,7 @@ public:
 	char _0x0005[3];
 	BYTE N000010FB; //0x0008 (80 = moves with player, some values will turn icon into map cursor and break it)
 	char _0x0009[7];
-	v3 v3Pos;
+	Vector3 v3Pos;
 	char _0x001C[6];
 	BYTE btFocused; //0x0022   (Focused? 0100 0000)
 	char _0x0023[5];

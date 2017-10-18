@@ -2,6 +2,7 @@
 
 
 namespace Features {
+	NativeMenu::CMenu menu;
 
 	/* private declerations */
 	void giveWeaponAddon(Ped ped, Hash weapon);
@@ -492,6 +493,265 @@ namespace Features {
 			notifyMap("~g~All Settings Loaded", 0);
 	}
 
+	static unsigned int lastSec = GetTickCount();
+	static int framesThisSec = 0;
+	static int framePerSec = 0;
+
+	double CUtil::CalcAverageTick()
+	{
+		framesThisSec++;
+		if (GetTickCount() - lastSec >= 1000) {
+			framePerSec = framesThisSec;
+			framesThisSec = 0;
+			lastSec = GetTickCount();
+		}
+		return framePerSec;
+	}
+
+	float CUtil::CalcSpeed(bool mphOut, Vehicle veh)
+	{
+		float speed = ENTITY::GET_ENTITY_SPEED(veh);
+		float MetersPerHour = (speed * 3600);
+		if (mphOut) {
+			float mph = (MetersPerHour / 1609.344f);
+			return mph;
+		}
+		else if (!mphOut) {
+			float kmh = MetersPerHour / 1000;
+			return kmh;
+		}
+		else
+			return speed;
+	}
+
+	void CUtil::printFPS()
+	{
+		int screen_res_x, screen_res_y;
+		GRAPHICS::GET_SCREEN_RESOLUTION(&screen_res_x, &screen_res_y);
+		std::stringstream oss;
+		oss << CalcAverageTick();
+		menu.PrintText((char*)oss.str().c_str(), 0, (screen_res_x / 1000) - 0.100f, (screen_res_y / 1000) + 0.040f, 0.f, 0.35f, { 225, 150, 96, 255 }, 1, 0);
+	}
+
+	void CUtil::printSpeed() {
+		/*SET_TEXT_FONT(0);
+		SET_TEXT_SCALE(7.26f, 7.26f);
+		SET_TEXT_CENTRE(1);speedometertypesize
+		BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
+		_ADD_TEXT_COMPONENT_SCALEFORM(name);*/
+		int screen_res_x, screen_res_y;
+		GRAPHICS::GET_SCREEN_RESOLUTION(&screen_res_x, &screen_res_y);
+
+		if (PED::IS_PED_IN_ANY_VEHICLE(PLAYER::PLAYER_PED_ID(), 0))
+		{
+			UI::SET_TEXT_FONT(0);
+			UI::SET_TEXT_PROPORTIONAL(1);
+			//SET_TEXT_SCALE(0.0, 0.60);
+			UI::SET_TEXT_SCALE(0.0, 0.92f);
+			UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+			UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 255);
+			UI::SET_TEXT_EDGE(1, 0, 0, 0, 255);
+			UI::SET_TEXT_DROP_SHADOW();
+			UI::SET_TEXT_OUTLINE();
+			UI::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
+			std::stringstream oss;
+			/*float speed = GET_ENTITY_SPEED(GET_VEHICLE_PED_IS_USING(PLAYER_PED_ID()));
+			float MetersPerHour = (speed * 3600);
+			float mph = (MetersPerHour / 1609.344f);
+			float mps = GET_ENTITY_SPEED(GET_VEHICLE_PED_IS_IN(PLAYER_PED_ID(), 0));
+			float kmh = mps * 3600 / 1000;
+			float milesperhour = kmh * 0.6213711916666667f;
+			if (SpeedMPH)
+			speed = round(milesperhour);
+			else if (!SpeedMPH)
+			speed = round(kmh); */
+			oss << round(CalcSpeed(true, VEHICLE::GET_LAST_DRIVEN_VEHICLE()));
+			UI::_ADD_TEXT_COMPONENT_SCALEFORM((char*)oss.str().c_str());
+			UI::END_TEXT_COMMAND_DISPLAY_TEXT((screen_res_x / 1000) - 0.096f, 1 - 0.074f);
+			UI::SET_TEXT_FONT(0);
+			UI::SET_TEXT_PROPORTIONAL(1);
+			//SET_TEXT_SCALE(0.0, 0.60);
+			UI::SET_TEXT_SCALE(0.0, 0.38f);
+			UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+			UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 255);
+			UI::SET_TEXT_EDGE(1, 0, 0, 0, 255);
+			UI::SET_TEXT_DROP_SHADOW();
+			UI::SET_TEXT_OUTLINE();
+			UI::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
+			std::stringstream osss;
+			osss << "~g~mph";
+			UI::_ADD_TEXT_COMPONENT_SCALEFORM((char*)osss.str().c_str());
+			UI::END_TEXT_COMMAND_DISPLAY_TEXT((screen_res_x / 1000) - 0.045f, 1 - 0.043f);
+		}
+		//END_TEXT_COMMAND_DISPLAY_TEXT(-0.015f + (screen_res_x / 100), -0.015f + (screen_res_y / 100));
+	}
+
+	bool CUtil::isPlayerFriend(Player player) {
+		if (NETWORK::NETWORK_IS_PLAYER_CONNECTED(player)) {
+			int handle;
+			NETWORK::NETWORK_HANDLE_FROM_PLAYER(player, &handle, 13);
+			return NETWORK::NETWORK_IS_FRIEND(&handle);
+		}
+		return false;
+	}
+
+	Vector3 CUtil::getBlipMarker()
+	{
+		static Vector3 zero;
+		Vector3 coords;
+
+		bool blipFound = false;
+		// search for marker blip
+		int blipIterator = UI::_GET_BLIP_INFO_ID_ITERATOR();
+		for (Blip i = UI::GET_FIRST_BLIP_INFO_ID(blipIterator); UI::DOES_BLIP_EXIST(i) != 0; i = UI::GET_NEXT_BLIP_INFO_ID(blipIterator))
+		{
+			if (UI::GET_BLIP_INFO_ID_TYPE(i) == 4)
+			{
+				coords = UI::GET_BLIP_INFO_ID_COORD(i);
+				blipFound = true;
+				break;
+			}
+		}
+		if (blipFound)
+		{
+			return coords;
+		}
+
+		return zero;
+	}
+
+	void CUtil::tpToMarker()
+	{
+		Vector3 coords = getBlipMarker();
+
+		if (coords.x == 0 && coords.y == 0)
+		{
+			notifyError("No Waypoint has been set!");
+			return;
+		}
+
+		// get entity to teleport
+		Entity e = PLAYER::PLAYER_PED_ID();
+		if (PED::IS_PED_IN_ANY_VEHICLE(e, 0))
+		{
+			e = PED::GET_VEHICLE_PED_IS_USING(e);
+		}
+
+		// load needed map region and check height levels for ground existence
+		bool groundFound = false;
+		static float groundCheckHeight[] =
+		{ 100.0, 150.0, 50.0, 0.0, 200.0, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0 };
+		for (int i = 0; i < sizeof(groundCheckHeight) / sizeof(float); i++)
+		{
+			ENTITY::SET_ENTITY_COORDS_NO_OFFSET(e, coords.x, coords.y, groundCheckHeight[i], 0, 0, 1);
+			STREAMING::LOAD_ALL_OBJECTS_NOW();
+			WAIT(100);
+			if (GAMEPLAY::GET_GROUND_Z_FOR_3D_COORD(coords.x, coords.y, groundCheckHeight[i], &coords.z, 0))
+			{
+				groundFound = true;
+				coords.z += 3.0;
+				break;
+			}
+		}
+		// if ground not found then set Z in air and give player a parachute
+		if (!groundFound)
+		{
+			coords.z = 1000.0;
+			WEAPON::GIVE_DELAYED_WEAPON_TO_PED(PLAYER::PLAYER_PED_ID(), 0xFBAB5776, 1, 0);
+		}
+		//do it
+		tpToCoords(e, coords);
+	}
+
+	void CUtil::tpToObjective()
+	{
+		Vector3 coords;
+		Entity e;
+		Ped playerPed = PLAYER::PLAYER_PED_ID();
+		if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, FALSE))
+			e = PED::GET_VEHICLE_PED_IS_USING(playerPed);
+		else e = playerPed;
+
+		bool blipFound = false;
+
+		if (ENTITY::IS_ENTITY_A_VEHICLE(e)) CNetwork::controlEnt(e);
+		for (int i = 0; i <= 1000; i++)
+		{
+			CBlipList bList;
+			CBlip* blip = bList.m_Blips[i];
+			if (blip)
+			{
+				if ((blip->dwColor == ColorYellowMission && blip->iIcon == SpriteStandard) || (blip->dwColor == ColorYellow && blip->iIcon == SpriteStandard) ||
+					(blip->dwColor == ColorWhite && blip->iIcon == SpriteRaceFinish) || (blip->dwColor == ColorGreen && blip->iIcon == SpriteStandard) || (blip->iIcon == SpriteCrateDrop)) {
+					coords = blip->v3Pos;
+					blipFound = true;
+					break; //During a race there's sometimes 2 yellow markers. We want the first one.
+				}
+			}
+		}
+
+		blipFound ? tpToCoords(e, coords) : notifyError("Objective not found!");
+
+	}
+
+	void CUtil::tpToCar()
+	{
+		Player player = PLAYER::PLAYER_ID();
+		Ped playerPed = PLAYER::PLAYER_PED_ID();
+		//	Vector3 getCoords(Ped ped); //{ return ENTITY::GET_ENTITY_COORDS(playerPed, 1) };
+		Vector3 startLoc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+
+		int veh = VEHICLE::GET_CLOSEST_VEHICLE(startLoc.x, startLoc.y, startLoc.z, 100.0, 0, 70);
+		VEHICLE::SET_VEHICLE_NEEDS_TO_BE_HOTWIRED(veh, 0);
+		PED::SET_PED_INTO_VEHICLE(PLAYER::PLAYER_PED_ID(), veh, -1);
+	}
+
+	void CUtil::tpToCoords(float x, float y, float z)
+	{
+		if (!(PED::IS_PED_IN_ANY_VEHICLE(PLAYER::PLAYER_PED_ID(), 0)))
+		{
+			ENTITY::SET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), x, y, z, 1, 0, 0, 1);
+		}
+		else
+		{
+			Vehicle playerVeh = (PED::GET_VEHICLE_PED_IS_USING(PLAYER::PLAYER_PED_ID()));
+			CNetwork::controlEnt(playerVeh);
+			ENTITY::SET_ENTITY_COORDS(playerVeh, x, y, z, 1, 0, 0, 1);
+		}
+		STREAMING::LOAD_ALL_OBJECTS_NOW();
+	}
+
+	void CUtil::tpToCoords(Entity ent, Vector3 coords)
+	{
+		ENTITY::SET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), coords.x, coords.y, coords.z, 1, 0, 0, 1);
+		CNetwork::controlEnt(ent);
+		STREAMING::LOAD_ALL_OBJECTS_NOW();
+	}
+
+	void CUtil::tpToPlayer(Ped playerPed)
+	{
+		Vector3 destloc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+		if (PED::IS_PED_IN_ANY_VEHICLE(PLAYER::PLAYER_PED_ID(), 0)) {
+			Vehicle veh = PED::GET_VEHICLE_PED_IS_IN(PLAYER::PLAYER_PED_ID(), 0);
+			CNetwork::controlEnt(veh);
+			if (NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(veh)) {
+				ENTITY::SET_ENTITY_COORDS_NO_OFFSET(veh, destloc.x, destloc.y, destloc.z, 0, 0, 0);
+				STREAMING::LOAD_ALL_OBJECTS_NOW();
+			}
+		}
+		else
+		{
+			tpToCoords(destloc.x, destloc.y, destloc.z);
+			STREAMING::LOAD_ALL_OBJECTS_NOW();
+			WAIT(1);
+			if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, 1))
+				if (VEHICLE::ARE_ANY_VEHICLE_SEATS_FREE(PED::GET_VEHICLE_PED_IS_IN(playerPed, 0)) && 1) {
+					CNetwork::controlEnt(PED::GET_VEHICLE_PED_IS_IN(playerPed, 0));
+					PED::SET_PED_INTO_VEHICLE(PLAYER::PLAYER_PED_ID(), PED::GET_VEHICLE_PED_IS_IN(playerPed, 0), -1);
+				}
+		}
+	}
+
 	void CPlayer::healArmor()
 	{
 		// set our health
@@ -741,10 +1001,6 @@ namespace Features {
 	{
 		Vehicle vehicle = 0; int NetID = 0;
 
-		STREAMING::REQUEST_MODEL(model);
-
-		if (!STREAMING::HAS_MODEL_LOADED(model)) return -1;
-
 		//Delete old vehicle
 		if (vDelete) {
 			if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, 0)) {
@@ -757,6 +1013,11 @@ namespace Features {
 
 		//Get player heading
 		float direction = ENTITY::GET_ENTITY_HEADING(playerPed);
+
+		if (!STREAMING::IS_MODEL_IN_CDIMAGE(model)) return 0;
+
+		STREAMING::REQUEST_MODEL(model);
+		while (!STREAMING::HAS_MODEL_LOADED(model)) WAIT(0);
 
 		//if player is offline
 		if (!NETWORK::NETWORK_IS_IN_SESSION()) {
@@ -933,5 +1194,358 @@ namespace Features {
 		return true;
 	}
 
+	void CVehicle::setPlateText(Vehicle vehicle)
+	{
+		std::string plateTemp = menu.show_keyboard("Numberplate Text", VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(vehicle));
+		if (plateTemp == "")
+			CUtil::notifyError("Input cannot be Blank");
+		else
+		{
+			VEHICLE::SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT());
+		}
+	}
+
+	void CVehicle::manualSelect(bool playerType)
+	{
+		Ped playerPed = PLAYER::PLAYER_PED_ID();
+		//if (playerType)
+		//	playerPed = sel.pedID;
+		std::string tempmodel = menu.show_keyboard("Vehicle Model", "");
+		if (tempmodel == "")
+			CUtil::notifyError("Input cannot be Blank");
+		else
+		{
+			if (STREAMING::IS_MODEL_VALID(CUtil::$(tempmodel)))//tempmodel.c_str;
+				spawn(CUtil::$(tempmodel), playerPed, 1, 1, 0);
+			else
+				CUtil::notifyError("Invalid Vehicle");
+		}
+	}
+
+	void CNetwork::controlID(Entity netid)
+	{
+		int tick = 0;
+
+		while (!NETWORK::NETWORK_HAS_CONTROL_OF_NETWORK_ID(netid) && tick <= 25)
+		{
+			NETWORK::NETWORK_REQUEST_CONTROL_OF_NETWORK_ID(netid);
+			tick++;
+		}
+	}
+
+	void CNetwork::controlEnt(Entity entity)
+	{
+		int tick = 0;
+		while (!NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(entity) && tick <= 25)
+		{
+			NETWORK::NETWORK_REQUEST_CONTROL_OF_ENTITY(entity);
+			tick++;
+		}
+		if (NETWORK::NETWORK_IS_SESSION_STARTED())
+		{
+			int netID = NETWORK::NETWORK_GET_NETWORK_ID_FROM_ENTITY(entity);
+			controlID(netID);
+			NETWORK::SET_NETWORK_ID_CAN_MIGRATE(netID, 1);
+		}
+	}
+
+	void CNetwork::dropWeapon(char *weapon, Ped recievingPed) {
+		Hash pedm = CUtil::$("csb_stripper_01");
+		Hash weaponh = CUtil::$(weapon);
+		Vector3 coords = ENTITY::GET_ENTITY_COORDS(recievingPed, 1);
+		STREAMING::REQUEST_MODEL(pedm);
+		while (!STREAMING::HAS_MODEL_LOADED(pedm))
+			WAIT(0);
+		if (STREAMING::HAS_MODEL_LOADED(pedm)) {
+			Ped ped = PED::CREATE_PED(26, pedm, coords.x, coords.y, coords.z + 5.f, 0, 1, 1);
+			STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(pedm);
+			ENTITY::SET_ENTITY_VISIBLE(ped, 0, 0);
+			WEAPON::GIVE_WEAPON_TO_PED(ped, weaponh, 9999, 1, 1);
+			WEAPON::SET_PED_DROPS_WEAPONS_WHEN_DEAD(ped, 1);
+			WEAPON::SET_PED_DROPS_WEAPON(ped);
+			PED::APPLY_DAMAGE_TO_PED(ped, 9999, 1);
+			ENTITY::SET_ENTITY_HEALTH(ped, 0);
+			ENTITY::SET_ENTITY_COLLISION(ped, 0, 0);
+			ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&ped);
+		}
+	}
+
+	void CNetwork::kickPlayer(Player player) {
+		if (NETWORK::NETWORK_IS_HOST()) {
+			if (PLAYER::PLAYER_ID() == player)
+				CUtil::notifyError("You cannot Kick yourself you tard");
+			else NETWORK::NETWORK_SESSION_KICK_PLAYER(player);
+		}
+		else CUtil::notifyError("You are not ~y~Host");
+	}
+
+	void CNetwork::attackCops(Ped playerPed) {
+
+		Vector3 targetloc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+		static Hash model = 0x5E3DA4A4;
+		if (!ENTITY::DOES_ENTITY_EXIST(playerPed)) return;
+		//Vector3 targetloc = coordsOf(playerPed);
+		STREAMING::REQUEST_MODEL(model);
+		while (!STREAMING::HAS_MODEL_LOADED(model))
+			WAIT(0);
+		int createdModel = PED::CREATE_PED(26, model, targetloc.x, targetloc.y, targetloc.z, 1, 1, 0);
+
+		ENTITY::SET_ENTITY_INVINCIBLE(createdModel, false);
+
+		Hash weapon = CUtil::$("weapon_pistol");
+		WEAPON::GIVE_WEAPON_TO_PED(createdModel, weapon, weapon, 9999, 9999);
+		AI::TASK_COMBAT_PED(createdModel, playerPed, 1, 1);
+		ENTITY::SET_ENTITY_INVINCIBLE(createdModel, false);
+		PED::SET_PED_COMBAT_ABILITY(createdModel, 100);
+		PED::SET_PED_CAN_SWITCH_WEAPON(createdModel, true);
+		AI::TASK_COMBAT_PED(createdModel, playerPed, 1, 1);
+		PED::SET_PED_AS_ENEMY(createdModel, 1);
+		PED::SET_PED_COMBAT_RANGE(createdModel, 1000);
+		PED::SET_PED_KEEP_TASK(createdModel, true);
+		PED::SET_PED_AS_COP(createdModel, 1);
+		PED::SET_PED_ALERTNESS(createdModel, 1000);
+	}
+
+	void CNetwork::attckSwat(Ped playerPed) {
+
+		Vector3 targetloc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+		if (!ENTITY::DOES_ENTITY_EXIST(playerPed)) return;
+		Hash stripper = CUtil::$("s_m_y_swat_01");
+		Hash railgun = CUtil::$("weapon_stungun");
+		STREAMING::REQUEST_MODEL(stripper);
+		while (!STREAMING::HAS_MODEL_LOADED(stripper))
+			WAIT(0);
+
+		int createdPED = PED::CREATE_PED(26, stripper, targetloc.x, targetloc.y, targetloc.z, 1, 1, 0);
+		ENTITY::SET_ENTITY_INVINCIBLE(createdPED, false);
+		PED::SET_PED_COMBAT_ABILITY(createdPED, 100);
+		WEAPON::GIVE_WEAPON_TO_PED(createdPED, railgun, railgun, 9999, 9999);
+		PED::SET_PED_CAN_SWITCH_WEAPON(createdPED, true);
+		AI::TASK_COMBAT_PED(createdPED, playerPed, 1, 1);
+		PED::SET_PED_ALERTNESS(createdPED, 1000);
+		PED::SET_PED_COMBAT_RANGE(createdPED, 1000);
+	}
+
+	void CNetwork::attackJesus(Ped playerPed) {
+
+		Vector3 targetloc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+			if (!ENTITY::DOES_ENTITY_EXIST(playerPed)) return;
+			//Hash model = $("u_m_m_model_01");
+			//static Hash weapon = $("WEAPON_RAILGUN");
+			static Hash model = 0xCE2CB751;
+			static Hash weapon = 0x6D544C99;
+			STREAMING::REQUEST_MODEL(model);
+			while (!STREAMING::HAS_MODEL_LOADED(model))
+				WAIT(0);
+
+			int createdPED = PED::CREATE_PED(26, model, targetloc.x, targetloc.y, targetloc.z, 1, 1, 0);
+			ENTITY::SET_ENTITY_INVINCIBLE(createdPED, false);
+			PED::SET_PED_COMBAT_ABILITY(createdPED, 100);
+			WEAPON::GIVE_WEAPON_TO_PED(createdPED, weapon, weapon, 9999, 9999);
+			PED::SET_PED_CAN_SWITCH_WEAPON(createdPED, true);
+			AI::TASK_COMBAT_PED(createdPED, playerPed, 1, 1);
+			PED::SET_PED_ALERTNESS(createdPED, 1000);
+			PED::SET_PED_COMBAT_RANGE(createdPED, 1000);
+	}
+
+	void CNetwork::attackSwatRiot(Ped playerPed) {
+
+		Vector3 targetloc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+			if (!ENTITY::DOES_ENTITY_EXIST(playerPed)) return;
+			Hash guysex = CUtil::$("s_m_y_swat_01");
+			STREAMING::REQUEST_MODEL(guysex);
+			while (!STREAMING::HAS_MODEL_LOADED(guysex))
+				WAIT(0);
+			int createdGuySex = PED::CREATE_PED(26, guysex, targetloc.x, targetloc.y, targetloc.z, 1, 1, 0);
+
+			ENTITY::SET_ENTITY_INVINCIBLE(createdGuySex, false);
+			int vehmodel = CUtil::$("riot");
+			STREAMING::REQUEST_MODEL(vehmodel);
+
+			while (!STREAMING::HAS_MODEL_LOADED(vehmodel)) WAIT(0);
+
+			Vehicle veh = CVehicle::spawn("riot", createdGuySex, 0, 0, 1);
+			VEHICLE::SET_VEHICLE_ON_GROUND_PROPERLY(veh);
+			Hash railgun = CUtil::$("weapon_bullpupshotgun");
+			WEAPON::GIVE_WEAPON_TO_PED(createdGuySex, railgun, railgun, 9999, 9999);
+			PED::SET_PED_INTO_VEHICLE(createdGuySex, veh, -1);
+			ENTITY::SET_ENTITY_INVINCIBLE(createdGuySex, false);
+			PED::SET_PED_COMBAT_ABILITY(createdGuySex, 100);
+			PED::SET_PED_CAN_SWITCH_WEAPON(createdGuySex, true);
+			AI::TASK_COMBAT_PED(createdGuySex, playerPed, 1, 1);
+			PED::SET_PED_AS_ENEMY(createdGuySex, 1);
+			PED::SET_PED_COMBAT_RANGE(createdGuySex, 1000);
+			PED::SET_PED_KEEP_TASK(createdGuySex, true);
+			PED::SET_PED_AS_COP(createdGuySex, 1000);
+			PED::SET_PED_ALERTNESS(createdGuySex, 1000);
+	}
+
+	void CNetwork::sendCops(Ped playerPed) {
+
+		Vector3 targetloc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+			if (!ENTITY::DOES_ENTITY_EXIST(playerPed)) return;
+			Hash guysex = CUtil::$("s_m_y_cop_01");
+			STREAMING::REQUEST_MODEL(guysex);
+			while (!STREAMING::HAS_MODEL_LOADED(guysex))
+				WAIT(0);
+			int createdGuySex = PED::CREATE_PED(26, guysex, targetloc.x, targetloc.y, targetloc.z, 1, 1, 0);
+
+			ENTITY::SET_ENTITY_INVINCIBLE(createdGuySex, false);
+			//
+			int vehmodel = CUtil::$("police3");
+			STREAMING::REQUEST_MODEL(vehmodel);
+
+			while (!STREAMING::HAS_MODEL_LOADED(vehmodel)) WAIT(0);
+			//			Vector3 coords = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(PLAYER_PED_ID(), 0.0, 5.0, 0.0);
+			Vehicle veh = CVehicle::spawn("police3", createdGuySex, 0, 0, 1);
+			VEHICLE::SET_VEHICLE_ON_GROUND_PROPERLY(veh);
+			//
+			Hash railgun = CUtil::$("weapon_pistol");
+			WEAPON::GIVE_WEAPON_TO_PED(createdGuySex, railgun, railgun, 0, 1);
+			PED::SET_PED_INTO_VEHICLE(createdGuySex, veh, -1);
+			AI::TASK_COMBAT_PED(createdGuySex, playerPed, 1, 1);
+			ENTITY::SET_ENTITY_INVINCIBLE(createdGuySex, false);
+			PED::SET_PED_COMBAT_ABILITY(createdGuySex, 100);
+			PED::SET_PED_CAN_SWITCH_WEAPON(createdGuySex, true);
+			AI::TASK_COMBAT_PED(createdGuySex, playerPed, 1, 1);
+			PED::SET_PED_AS_ENEMY(createdGuySex, 1);
+			PED::SET_PED_COMBAT_RANGE(createdGuySex, 1000);
+			PED::SET_PED_KEEP_TASK(createdGuySex, true);
+			PED::SET_PED_AS_COP(createdGuySex, 1000);
+			PED::SET_PED_ALERTNESS(createdGuySex, 1000);
+	}
+
+	void CNetwork::attackTanks(Ped playerPed) {
+
+		Vector3 targetloc = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+		if (!ENTITY::DOES_ENTITY_EXIST(playerPed)) return;
+		Hash guysex = CUtil::$("s_m_y_marine_01");
+		STREAMING::REQUEST_MODEL(guysex);
+		while (!STREAMING::HAS_MODEL_LOADED(guysex))
+			WAIT(0);
+		int createdGuySex = PED::CREATE_PED(26, guysex, targetloc.x, targetloc.y, targetloc.z, 1, 1, 0);
+
+		ENTITY::SET_ENTITY_INVINCIBLE(createdGuySex, false);
+		//
+		int vehmodel = CUtil::$("rhino");
+		STREAMING::REQUEST_MODEL(vehmodel);
+
+		while (!STREAMING::HAS_MODEL_LOADED(vehmodel)) WAIT(0);
+		//			Vector3 coords = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(PLAYER_PED_ID(), 0.0, 5.0, 0.0);
+		Vehicle veh = CVehicle::spawn("rhino", createdGuySex, 0, 0, 1);
+		VEHICLE::SET_VEHICLE_ON_GROUND_PROPERLY(veh);
+		//
+		PED::SET_PED_INTO_VEHICLE(createdGuySex, veh, -1);
+		AI::TASK_COMBAT_PED(createdGuySex, playerPed, 1, 1);
+		ENTITY::SET_ENTITY_INVINCIBLE(createdGuySex, false);
+		PED::SET_PED_COMBAT_ABILITY(createdGuySex, 100);
+		PED::SET_PED_CAN_SWITCH_WEAPON(createdGuySex, true);
+		AI::TASK_COMBAT_PED(createdGuySex, playerPed, 1, 1);
+		PED::SET_PED_AS_ENEMY(createdGuySex, 1);
+		PED::SET_PED_COMBAT_RANGE(createdGuySex, 1000);
+		PED::SET_PED_KEEP_TASK(createdGuySex, true);
+		PED::SET_PED_AS_COP(createdGuySex, 1000);
+		PED::SET_PED_ALERTNESS(createdGuySex, 1000);
+	}
+
+	void CNetwork::shootPed(Player selectedPlayer)
+	{
+		Ped selectedPed = PLAYER::GET_PLAYER_PED(selectedPlayer);
+		Vector3 pedLoc = ENTITY::GET_ENTITY_COORDS(selectedPed, 1);
+		Vector3 targetLoc = PED::GET_PED_BONE_COORDS(selectedPed, 24818, 0.f, 0.f, 0.f);
+		Ped shooterPed;
+		PED::GET_CLOSEST_PED(pedLoc.x, pedLoc.y, pedLoc.z, 45.f, 1, 1, &shooterPed, 1, 1, 1);
+		Vector3 shooterLoc = ENTITY::GET_ENTITY_COORDS(shooterPed, 1);
+		GAMEPLAY::SHOOT_SINGLE_BULLET_BETWEEN_COORDS(shooterLoc.x, shooterLoc.y, shooterLoc.z + 2.f, targetLoc.x, targetLoc.y, targetLoc.z, 300, 1, CUtil::$("weapon_heavysniper"), shooterPed, 1, 1, 345.f);
+	}
+
+	void CNetwork::soloSesh(int lagTime) {
+		if (NETWORK::NETWORK_IS_SESSION_ACTIVE()) {
+			CUtil::notifyMap("~g~Bumping to Solo Session", 1);
+			Sleep(lagTime);
+		}
+		return;
+	}
+
+	void CNetwork::killAll() {
+		for (int i = 0; i <= 32; i++) {
+			WAIT(0);
+			if (i == PLAYER::PLAYER_ID())
+				continue;
+			if (PLAYER::IS_PLAYER_PLAYING(i)) {
+					int Handle = PLAYER::GET_PLAYER_PED(i);
+					Vector3 pos = ENTITY::GET_ENTITY_COORDS(Handle, 1);
+					if (!ENTITY::DOES_ENTITY_EXIST(Handle)) continue;
+					FIRE::ADD_EXPLOSION(pos.x, pos.y, pos.z, 29, 0.5f, true, false, 5.0f);
+			}
+			if (i == 32) {
+				break;
+			}
+		}
+	}
+
+	void CNetwork::loop_drawMarker(Player player, NativeMenu::RGBA bannerRect)
+	{
+		Entity e;
+		if (PED::IS_PED_IN_ANY_VEHICLE(PLAYER::GET_PLAYER_PED(player), 0))
+			e = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(player), 0);
+		else
+			e = PLAYER::GET_PLAYER_PED(player);
+		Vector3 draw = ENTITY::GET_ENTITY_COORDS(e, 1);
+		GRAPHICS::DRAW_MARKER(0, draw.x, draw.y, draw.z + 2.5f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, bannerRect.r, bannerRect.g, bannerRect.b, 225, 1, 1, 0, 1, 0, 0, 0);
+	}
+
+	void CNetwork::whosTalking()
+	{
+
+		for (int i = 0; i <= 32; i++)
+		{
+			WAIT(0);
+			if (i == PLAYER::PLAYER_ID())continue;
+			int Handle = PLAYER::GET_PLAYER_PED(i);
+
+			if (NETWORK::NETWORK_IS_PLAYER_TALKING(Handle))
+			{
+				char* handle = (char*)PLAYER::GET_PLAYER_NAME(i);
+				CUtil::notifyBottom(handle);
+			}
+		}
+	}
+
+	void CNetwork::ESP(Player target, Ped playerPed, NativeMenu::RGBA bannerRect)
+	{
+		if (target != PLAYER::PLAYER_ID() && ENTITY::DOES_ENTITY_EXIST(playerPed))
+		{
+			int r = bannerRect.r, g = bannerRect.g, b = bannerRect.b;
+			Vector3 entitylocation = ENTITY::GET_ENTITY_COORDS(playerPed, 1);
+			Vector3 top1world = { entitylocation.x + 0.3f, NULL, entitylocation.y + 0.3f, NULL, entitylocation.z + .8f, NULL };
+			Vector3 top2world = { entitylocation.x - 0.3f, NULL, entitylocation.y + 0.3f, NULL, entitylocation.z + .8f, NULL };
+			Vector3 top3world = { entitylocation.x + 0.3f, NULL, entitylocation.y - 0.3f, NULL, entitylocation.z + .8f, NULL };
+			Vector3 top4world = { entitylocation.x - 0.3f, NULL, entitylocation.y - 0.3f, NULL, entitylocation.z + .8f, NULL };
+			Vector3 bottom1world = { entitylocation.x + 0.3f, NULL, entitylocation.y + 0.3f, NULL, entitylocation.z - .8f, NULL };
+			Vector3 bottom2world = { entitylocation.x - 0.3f, NULL, entitylocation.y + 0.3f, NULL, entitylocation.z - .8f, NULL };
+			Vector3 bottom3world = { entitylocation.x + 0.3f, NULL, entitylocation.y - 0.3f, NULL, entitylocation.z - .8f, NULL };
+			Vector3 bottom4world = { entitylocation.x - 0.3f, NULL, entitylocation.y - 0.3f, NULL, entitylocation.z - .8f, NULL };
+
+			GRAPHICS::DRAW_LINE(top1world.x, top1world.y, top1world.z, top2world.x, top2world.y, top2world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(top2world.x, top2world.y, top2world.z, top4world.x, top4world.y, top4world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(top4world.x, top4world.y, top4world.z, top3world.x, top3world.y, top3world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(top1world.x, top1world.y, top1world.z, top3world.x, top3world.y, top3world.z, r, g, b, 255);
+
+			GRAPHICS::DRAW_LINE(bottom1world.x, bottom1world.y, bottom1world.z, bottom2world.x, bottom2world.y, bottom2world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(bottom2world.x, bottom2world.y, bottom2world.z, bottom4world.x, bottom4world.y, bottom4world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(bottom3world.x, bottom3world.y, bottom3world.z, bottom4world.x, bottom4world.y, bottom4world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(bottom3world.x, bottom3world.y, bottom3world.z, bottom1world.x, bottom1world.y, bottom1world.z, r, g, b, 255);
+
+			GRAPHICS::DRAW_LINE(top1world.x, top1world.y, top1world.z, bottom1world.x, bottom1world.y, bottom1world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(top2world.x, top2world.y, top2world.z, bottom2world.x, bottom2world.y, bottom2world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(top3world.x, top3world.y, top3world.z, bottom3world.x, bottom3world.y, bottom3world.z, r, g, b, 255);
+			GRAPHICS::DRAW_LINE(top4world.x, top4world.y, top4world.z, bottom4world.x, bottom4world.y, bottom4world.z, r, g, b, 255);
+
+			Vector3 locationOne = entitylocation;
+			Vector3 locationTwo = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), false);
+			GRAPHICS::DRAW_LINE(locationOne.x, locationOne.y, locationOne.z, locationTwo.x, locationTwo.y, locationTwo.z, r, g, b, 255);
+		}
+	}
 
 }

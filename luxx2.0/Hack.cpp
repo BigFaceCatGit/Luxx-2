@@ -8,7 +8,12 @@ CWeaponInfo* CHack::m_pCWeapon = nullptr;
 NativeMenu::CMenu menu;
 
 Variables::CPlayer m_player;
-Variables::CWeapon weapon;
+Variables::CWeapon m_weapon;
+Variables::CMisc m_misc;
+Variables::CNetwork m_network;
+Variables::CVehicle m_vehicle;
+
+int selectPlayer;
 
 void loops()
 {
@@ -19,11 +24,11 @@ void loops()
 	/* loops up in here */
 
 	/* hotkeys */
-	if (GetAsyncKeyState(TELEPORT_KEY) & 1) {
-		Features::CTeleport::teleportToWaypoint();
+	if (GetAsyncKeyState(menu.repairKey) & 1) {
+		Features::CUtil::tpToMarker();
 	}
 
-	if (GetAsyncKeyState(VK_INSERT) & 1) {
+	if (GetAsyncKeyState(menu.unloadKey) & 1) {
 		menu.drawSubtitle("Unloading...");
 		CHooking::unLoad();
 	}
@@ -41,7 +46,9 @@ void loops()
 	}
 
 	if (m_player.neverWanted) {
-		PLAYER::CLEAR_PLAYER_WANTED_LEVEL(player);
+		//CHack::m_pCWorld->CPedLocalPlayer->pCPlayerInfo->CWantedData.dwWantedLvl = 0;
+		//CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fAcceleration = m_vehicle.accelMult;
+		PLAYER::CLEAR_PLAYER_WANTED_LEVEL(PLAYER::PLAYER_ID());
 	}
 
 	if (m_player.pCleanPlayer) {
@@ -85,52 +92,76 @@ void loops()
 		ENTITY::SET_ENTITY_COLLISION(playerPed, false, true);
 	}
 
-	if (weapon.unlimitedAmmo) {
+	if (m_weapon.unlimitedAmmo) {
 		//WEAPON::SET_PED_INFINITE_AMMO_CLIP(playerPed, true);
 		Features::CWeapon::infiniteAmmo();
 	}
 
-	if (weapon.explosiveBullets) {
+	if (m_weapon.explosiveBullets) {
 		GAMEPLAY::SET_EXPLOSIVE_AMMO_THIS_FRAME(player);
 	}
 
-	if (weapon.fireAmmo) {
+	if (m_weapon.fireAmmo) {
 		GAMEPLAY::SET_FIRE_AMMO_THIS_FRAME(player);
 	}
 
-	if (weapon.explosiveHands) {
+	if (m_weapon.explosiveHands) {
 		GAMEPLAY::SET_EXPLOSIVE_MELEE_THIS_FRAME(player);
 	}
 
-	if (weapon.infiniteParachutes) {
+	if (m_weapon.infiniteParachutes) {
 		Features::CWeapon::infiniteParachute();
 	}
 
-	if (weapon.ammoType) {
-		Features::CWeapon::ammoModification(weapon.ammoModType);
+	if (m_weapon.ammoType) {
+		Features::CWeapon::ammoModification(m_weapon.ammoModType);
 	}
 
-	if (weapon.damageModifier > 1.0f) {
-		PLAYER::SET_PLAYER_WEAPON_DAMAGE_MODIFIER(player, weapon.damageModifier);
+	if (m_weapon.damageModifier > 1.0f) {
+		PLAYER::SET_PLAYER_WEAPON_DAMAGE_MODIFIER(player, m_weapon.damageModifier);
 	}
-	else if (weapon.damageModifier == 1.0f) {
+	else if (m_weapon.damageModifier == 1.0f) {
 		PLAYER::SET_PLAYER_WEAPON_DAMAGE_MODIFIER(player, 1.0f);
 	}
 
-	if (weapon.rapidFire) {
+	if (m_weapon.rapidFire) {
 		Features::CWeapon::rapidFire();
 	}
 
-	if (weapon.noRecoil) {
+	if (m_weapon.noRecoil) {
 		CHack::m_pCWorld->CPedLocalPlayer->pCWeaponManager->CWeaponCur->fRecoilMultiplier = 0.0f;
 	}
 
-	if (weapon.noSpread) {
+	if (m_weapon.noSpread) {
 		CHack::m_pCWorld->CPedLocalPlayer->pCWeaponManager->CWeaponCur->fSpread = 0.0f;
 	}
 
-	if (weapon.noReload) {
+	if (m_weapon.noReload) {
 		CHack::m_pCWorld->CPedLocalPlayer->pCWeaponManager->CWeaponCur->fReloadTimeMultiplier = 0.0f;
+	}
+
+	if (m_misc.printFps) {
+		Features::CUtil::printFPS();
+	}
+
+	if (m_misc.printSpeed) {
+		Features::CUtil::printSpeed();
+	}
+
+	if (m_network.boxESP) {
+		Features::CNetwork::ESP(selectPlayer, PLAYER::GET_PLAYER_PED(selectPlayer), menu.titleRect);
+	}
+
+	if (m_network.showTalking) {
+		Features::CNetwork::whosTalking();
+	}
+
+	if (m_vehicle.handleTest) {
+		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fAcceleration = 15.f;
+		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fBrakeForce = 15.f;
+		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fCamberStiffnesss = 0.5;
+		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fDeformationDamageMult = 15.f;
+		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fSuspensionLowerLimit = 0.1;
 	}
 }
 
@@ -161,7 +192,7 @@ void selfOptions()
 	menu.Toggle("Never wanted", &m_player.neverWanted, { "Once toggled, cops will turn a blind-eye." });
 	menu.OptionCallBack("Give armour and health", [] { Features::CPlayer::healArmor(); }, { "Give health and armour in desperate situations!" });
 	menu.OptionCallBack("Clean player", [] { Features::CPlayer::cleanPlayer(); }, { "When you're ~~c~dirty~s~." });
-	menu.Toggle("Loop clean player", &m_player.pCleanPlayer, { "~b~Alpha~s~ will clean you automatically." });
+	menu.Toggle("Loop clean player", &m_player.pCleanPlayer, { "will clean you automatically." });
 	menu.Toggle("Super jump", &m_player.pSuperJump, { "Jump ~g~higher~s~ than usual." });
 	menu.ToggleCallback("Fast run", &m_player.pFastRun, nullptr, [] { PLAYER::SET_RUN_SPRINT_MULTIPLIER_FOR_PLAYER(PLAYER::PLAYER_ID(), 1.f); }, { "Run ~g~faster~s~ than usual." });
 	menu.Toggle("Super run", &m_player.pSuperRun, { "Run even faster!" });
@@ -174,11 +205,64 @@ void selfOptions()
 	menu.ToggleCallback("Collision", &m_player.pCollision, nullptr, [] { ENTITY::SET_ENTITY_COLLISION(PLAYER::PLAYER_PED_ID(), true, false); }, { "Collide with nothing." });
 }
 
+void attackerMenu() {
+	menu.Title("Send Attackers");
+	menu.OptionCallBack("Railgun Jesus", [] { Features::CNetwork::attackJesus(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "PRAISE THE LAAAWWD!" });
+	menu.OptionCallBack("Naughty Cops 1", [] { Features::CNetwork::attackCops(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "" });
+	menu.OptionCallBack("Naughty Cops 2", [] { Features::CNetwork::sendCops(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "" });
+	menu.OptionCallBack("SWAT Team", [] { Features::CNetwork::attckSwat(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "" });
+	menu.OptionCallBack("SWAT Team (Riot)", [] { Features::CNetwork::attackSwatRiot(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "" });
+	menu.OptionCallBack("Tanks", [] {Features::CNetwork::attackTanks(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "" });
+}
+
+void networkPlayer() {
+	menu.Title(PLAYER::GET_PLAYER_NAME(selectPlayer));
+	menu.OptionCallBack("Give Weapons", [] { Features::CWeapon::giveAllGuns(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "Give Player All Weapons" }); //1
+	menu.OptionCallBack("Remove Weapons", [] {Features::CWeapon::removeAllWeapons(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "No ~q~Weps~s~ for u" }); //private																	   //addOption("Give Tronbike", "~r~Only works when close, this will crash you"); //test 1
+	menu.OptionCallBack("Clone Vehicle", [] {Features::CVehicle::clone(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "Like theft but funnier" }); //2
+	menu.Submenu("Send Attackers", attackerMenu, { "Like ~y~MerryWeather~s~, but without the bills" }); //3
+	menu.OptionCallBack("Give Firework Launcher", [] {Features::CNetwork::dropWeapon("WEAPON_FIREWORK", PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "WIP" }); //4
+	//addOption("Kick From Vehicle", [] {playerKickVeh(sel.pedID); }, ""); //private																										 //addOption("Delete Vehicle", [] {delete_vehicle(sel.pedID); }, ""); //private
+	menu.OptionCallBack("Shoot Player", [] {Features::CNetwork::shootPed(selectPlayer); }, { "Random Ped Snipes Player" });
+	menu.Toggle("Drop 2k Bags", &menu.moneyDrop[selectPlayer], { "RISKY AS ~r~FUCK~s~ (bad idea)" }); //test 5
+	menu.Toggle("Freeze Player", &menu.freezePlayer[selectPlayer], { "" }); //test
+	menu.Toggle("Fuck Camera", &menu.fuckCamera[selectPlayer], { "Like the most intense drunk cam ever" }); //test
+	menu.Toggle("Annoying Loop", &menu.annoyLoop[selectPlayer], { "Doesn't do damage, however is irritating as balls" }); //test
+	menu.Toggle("Forcefield", &menu.forcefield[selectPlayer], { "Makes everything 10x Harder" }); //test														  //addOption("TP to Me"); //4
+	menu.Toggle("Explosion Loop", &menu.explodePlayer[selectPlayer], { "Take a wild guess what it does" });
+	menu.Toggle("Track Player", &menu.trackPlayer[selectPlayer], { "Track Player's movement with ~g~ESP~s~" });
+	menu.OptionCallBack("TP to Player", [] {Features::CUtil::tpToPlayer(PLAYER::GET_PLAYER_PED(selectPlayer)); }, { "" }); //5
+	//addOption("TP to Waypoint", "WIP"); //6
+	//addOption("Clone Crash"); //private
+	//addOption("Send Warning Text", [] {online::player::sendText(sel.ID, sel.sName + ", ya bish ~g~gitfukt ~r~<3"s); }, "");
+	if (NETWORK::NETWORK_IS_HOST())
+		menu.OptionCallBack("Kick Player", [] { Features::CNetwork::kickPlayer(selectPlayer); }, { "Host Only" });
+
+}
+
+void playerList() {
+	menu.Title("Player Index");
+	for (int i = 0; i < 32; i++) {
+		if (NETWORK::NETWORK_IS_PLAYER_CONNECTED(i))
+			if (menu.aPlayer(PLAYER::GET_PLAYER_NAME(i), i, networkPlayer))
+				selectPlayer = i;
+	}
+	if (m_network.drawMarker)
+		Features::CNetwork::loop_drawMarker(menu.getOption() - 1, menu.titleRect);
+
+	/*old test option for drawing player info - useful for debug*/
+	/*if (testOptions) {
+		drawPlayerInfo(currentOption - 1);
+	}*/
+}
+
 void network()
 {
 	menu.Title("NETWORK");
-	menu.OptionCallBack("Hello bish", [] {  NativeMenu::CMenu::drawSubtitle("Sup"); });
-	menu.Toggle("Box ESP", &Variables::CNetwork::boxESP, { "Draw a box around each player." });
+	//menu.OptionCallBack("Hello bish", [] {  NativeMenu::CMenu::drawSubtitle("Sup"); });
+	menu.Submenu("Player List", playerList, { "Shows all the ~b~Players~s~  in your lobby" });
+	menu.Toggle("Box ESP", &m_network.boxESP, { "Draw a box around each player." });
+	menu.Toggle("Show Talking", &m_network.showTalking, { "Displays who's talking in a lobby" });
 }
 
 void pedManagement()
@@ -270,7 +354,7 @@ void teleport()
 	menu.Title("TELEPORTATION");
 	//menu.Submenu("Saved locations", savedLocations, { "Save your locations for quick access." });
 	menu.OptionCallBack("Teleport to map marker", [] { Features::CTeleport::teleportToWaypoint(); }, { "When walking is too overrated." });
-	menu.OptionCallBack("Teleport to closest vehicle", [] { Features::CTeleport::teleportToVehicle(); }, { "Let ~b~Alpha~s~ find you a vehicle." });
+	menu.OptionCallBack("Teleport to closest vehicle", [] { Features::CTeleport::teleportToVehicle(); }, { "Let ~b~LUXX~s~ find you a vehicle." });
 
 	menu.Teleport("Los Santos Customs", { -354.6175f, -121.153f, 38.6982f });
 	menu.Teleport("Airport", { -1102.2910f, -2894.5160f, 13.9467f });
@@ -283,6 +367,10 @@ void teleport()
 	menu.Submenu("Shops", shopsLocations, { "Teleport to one of the shops around the map" });
 	menu.Submenu("Misc Locations", miscLocations, { "Teleport to a misc location." });
 	menu.Submenu("Weird Locations", scaryLocations, { "Teleport to a weird location" });
+}
+
+void v_spawnSettings() {
+	menu.Title("SPAWNER SETTINGS");
 }
 
 void boats()
@@ -325,7 +413,7 @@ void cyclesShite()
 	}
 }
 
-void EmergencyCars()
+void emergencyCars()
 {
 	menu.Title("EMERGENCY");
 	for (int i = 0; i < 13; i++) {
@@ -336,19 +424,103 @@ void EmergencyCars()
 void superCars()
 {
 	menu.Title("SUPER CARS");
-	for (auto vehicle : SuperTestHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+}
+
+void sportsCars() {
+	menu.Title("SUPER CARS");
+	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+}
+
+void sportsClassic() {
+	menu.Title("SUPER CARS");
+	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+}
+
+void muscleCars() {
+	menu.Title("SUPER CARS");
+	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+}
+
+void sedanCars() {
+	menu.Title("SUPER CARS");
+	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+}
+
+void suvCars() {
+	menu.Title("SUPER CARS");
+	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+}
+
+void offroadCars() {
+	menu.Title("SUPER CARS");
+	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+}
+
+void motorCycles() {
+
+}
+
+void planes() {
+
+}
+
+void helicopters() {
+
+}
+
+void vansCars() {
+
+}
+
+void militaryCars() {
+
+}
+
+void utilityCars() {
+
+}
+
+void serviceCars() {
+
+}
+
+void industrialCars() {
+
+}
+
+void trailers() {
+
 }
 
 void vehicleSpawner()
 {
 	menu.Title("VEHICLE SPAWNER");
-	menu.Submenu("Boat", boats, {});
-	menu.Submenu("Commercial", commercialCars, {});
-	menu.Submenu("Compact", compactCars, {});
-	menu.Submenu("Coupes", coupesCars, {});
-	menu.Submenu("Cycles", cyclesShite, {});
-	menu.Submenu("Emergency", EmergencyCars, {});
-	menu.Submenu("Super", superCars, {});
+	menu.Submenu("Spawn Settings", v_spawnSettings, { "Adjust Spawn Settings" }); //1
+	menu.Submenu("Super", superCars, {}); //2
+	menu.Submenu("Sports", sportsCars, {}); //3
+	menu.Submenu("Sports Classics", sportsClassic, {}); //4
+	menu.Submenu("Coupes", coupesCars, {});//5
+	menu.Submenu("Muscle", muscleCars, {});//6
+	menu.Submenu("Sedan", sedanCars, {});//7
+	menu.Submenu("Compacts", compactCars, {});//8
+	menu.Submenu("SUV", suvCars, {});//9
+	menu.Submenu("Offroad", offroadCars, {});//10
+	menu.Submenu("Motorcycles", motorCycles, {});//11
+	menu.Submenu("Cycles", cyclesShite, {});//12
+	menu.Submenu("Planes", planes, {});//12
+	menu.Submenu("Helicopters", helicopters, {});//12
+	menu.Submenu("Boats", boats, {});//13
+	menu.Submenu("Vans", vansCars, {});//13
+	menu.Submenu("Commercial", commercialCars, {});//14
+	menu.Submenu("Military", militaryCars, {});//15
+	menu.Submenu("Emergency", emergencyCars, {});//16
+	menu.Submenu("Utility", utilityCars, {});//17
+	menu.Submenu("Service", serviceCars, {});//18
+	menu.Submenu("Industrial", industrialCars, {});//19
+	menu.Submenu("Trailers", trailers, {});//19
+	menu.OptionCallBack("Search", [] { Features::CVehicle::manualSelect(false); }, { "Manually Enter Vehicle Name" });//20
+	//addOption("Random Vehicle", [] {vehicle::random(); }, "Spawns a random vehicle WIP");//21
 }
 
 void vehicleOptions()
@@ -372,17 +544,17 @@ void gunshopOptions()
 void ammoMods()
 {
 	menu.Title("AMMO MODIFICATION", "shopui_title_gr_gunmod", "shopui_title_gr_gunmod");
-	menu.Toggle("Toggle ammo modification", &weapon.ammoType, { "Main toggle for ammo modification." });
+	menu.Toggle("Toggle ammo modification", &m_weapon.ammoType, { "Main toggle for ammo modification." });
 
-	if (weapon.ammoType) {
-		menu.OptionCallBack("Stinger", [] { weapon.ammoModType = WEAPON_STINGER; });
-		menu.OptionCallBack("Fireworks", [] { weapon.ammoModType = WEAPON_FIREWORK; });
-		menu.OptionCallBack("Grenade", [] { weapon.ammoModType = WEAPON_GRENADE; });
-		menu.OptionCallBack("Snowball", [] { weapon.ammoModType = WEAPON_SNOWBALL; });
-		menu.OptionCallBack("Flare", [] { weapon.ammoModType = WEAPON_FLARE; });
-		menu.OptionCallBack("Flare gun", [] { weapon.ammoModType = WEAPON_FLARE_GUN; });
-		menu.OptionCallBack("Molotov", [] { weapon.ammoModType = WEAPON_MOLOTOV; });
-		menu.OptionCallBack("Vehicle rocket", [] { weapon.ammoModType = WEAPON_VEHICLE_ROCKET; });
+	if (m_weapon.ammoType) {
+		menu.OptionCallBack("Stinger", [] { m_weapon.ammoModType = WEAPON_STINGER; });
+		menu.OptionCallBack("Fireworks", [] { m_weapon.ammoModType = WEAPON_FIREWORK; });
+		menu.OptionCallBack("Grenade", [] { m_weapon.ammoModType = WEAPON_GRENADE; });
+		menu.OptionCallBack("Snowball", [] { m_weapon.ammoModType = WEAPON_SNOWBALL; });
+		menu.OptionCallBack("Flare", [] { m_weapon.ammoModType = WEAPON_FLARE; });
+		menu.OptionCallBack("Flare gun", [] { m_weapon.ammoModType = WEAPON_FLARE_GUN; });
+		menu.OptionCallBack("Molotov", [] { m_weapon.ammoModType = WEAPON_MOLOTOV; });
+		menu.OptionCallBack("Vehicle rocket", [] { m_weapon.ammoModType = WEAPON_VEHICLE_ROCKET; });
 	}
 }
 
@@ -395,16 +567,16 @@ void weaponOptions()
 	menu.OptionCallBack("Replenish all weapons", [] { Features::CWeapon::replenishAllGuns(PLAYER::PLAYER_PED_ID()); }, { "Replenish ~b~all~s~ weapons." });
 	menu.OptionCallBack("Upgrade all weapons", [] { Features::CWeapon::upgradeAllGuns(PLAYER::PLAYER_PED_ID()); }, { "Upgrade ~b~all~s~ weapons." });
 	menu.OptionCallBack("Remove all weapons", [] { Features::CWeapon::removeAllWeapons(PLAYER::PLAYER_PED_ID()); }, { "Why would you do that?" });
-	menu.Toggle("No recoil", &weapon.noRecoil, { "Shoot with ease." });
-	menu.Toggle("No spread", &weapon.noSpread, { "Shoot a laser." });
-	menu.Toggle("No reload", &weapon.noReload, { "Same as infinite ammunition." });
-	menu.Toggle("Infinite ammunition", &weapon.unlimitedAmmo, { "You will ~g~never~s~ run out of bullets." });
-	menu.Toggle("Explosive ammunition", &weapon.explosiveBullets, { "Explosive bullets. Yay!" });
-	menu.Toggle("Fire ammunition", &weapon.fireAmmo, { "Not as powerful as explosive bullets." });
-	menu.Toggle("Explosive hands", &weapon.explosiveHands, { "When weapons just don't work." });
-	menu.Toggle("Rapid fire", &weapon.rapidFire, { "Hopefully, you will shoot faster." });
-	menu.Float("Weapon damage modifier", &weapon.damageModifier, 1.0f, 50.0f, 0.1f, { "Modify your ~g~weapon~s~ damage." });
-	menu.Toggle("Infinite parachutes", &weapon.infiniteParachutes, { "When you run out of parachutes mid-air." });
+	menu.Toggle("No recoil", &m_weapon.noRecoil, { "Shoot with ease." });
+	menu.Toggle("No spread", &m_weapon.noSpread, { "Shoot a laser." });
+	menu.Toggle("No reload", &m_weapon.noReload, { "Same as infinite ammunition." });
+	menu.Toggle("Infinite ammunition", &m_weapon.unlimitedAmmo, { "You will ~g~never~s~ run out of bullets." });
+	menu.Toggle("Explosive ammunition", &m_weapon.explosiveBullets, { "Explosive bullets. Yay!" });
+	menu.Toggle("Fire ammunition", &m_weapon.fireAmmo, { "Not as powerful as explosive bullets." });
+	menu.Toggle("Explosive hands", &m_weapon.explosiveHands, { "When weapons just don't work." });
+	menu.Toggle("Rapid fire", &m_weapon.rapidFire, { "Hopefully, you will shoot faster." });
+	menu.Float("Weapon damage modifier", &m_weapon.damageModifier, 1.0f, 50.0f, 0.1f, { "Modify your ~g~weapon~s~ damage." });
+	menu.Toggle("Infinite parachutes", &m_weapon.infiniteParachutes, { "When you run out of parachutes mid-air." });
 }
 
 void timeOptions()
@@ -425,6 +597,8 @@ void ObjectMan()
 void miscOptions()
 {
 	menu.Title("MISC. OPTIONS");
+	menu.Toggle("Print FPS", &m_misc.printFps, { "Draws the current framerate" });
+	menu.Toggle("Print Speed", &m_misc.printSpeed, { "In place for a working speedo rn" });
 }
 
 void shooterOptions()
@@ -459,18 +633,18 @@ void settings()
 MenuFunc NativeMenu::MAIN_MENU()
 {
 	menu.Title("MAIN MENU");
-	menu.Submenu("Self options", selfOptions, { "Control yourself." });
-	menu.Submenu("Network", network, { "Control the session." });
-	menu.Submenu("Ped management", pedManagement, { "Spawn and manage ~b~PEDs~s~", "and make them your bodyguard!" });
-	menu.Submenu("Teleportation", teleport, { "Be ~b~anywhere~s~ at any time." });
-	menu.Submenu("Vehicle options", vehicleOptions, { "Pimp yo ~g~ride~s~!" });
+	menu.Submenu("Online", network, { "Extra Online Functions" });
+	menu.Submenu("Self", selfOptions, { "Character Only Functions" });
+//	menu.Submenu("Ped management", pedManagement, { "Spawn and manage ~b~PEDs~s~", "and make them your bodyguard!" });
+	menu.Submenu("Vehicle", vehicleOptions, { "~q~Modify~s~, ~g~Repair~s~, ~r~Fuck With~s~" });
 	menu.Submenu("Weapon options", weaponOptions, { "Your own mobile ~r~gunstore~s~." });
-	menu.Submenu("Time options", timeOptions, { "Control the time." });
-	menu.Submenu("World options", worldOptions, { "Is this a ~y~God~s~ simulator?" });
-	menu.Submenu("Object manipulator", ObjectMan, { "Spawn and edit objects." });
+	menu.Submenu("Teleport", teleport, { "Be ~b~anywhere~s~ at any time." });
+	//menu.Submenu("Time options", timeOptions, { "Control the time." });
+	menu.Submenu("World", worldOptions, { "Is this a ~y~God~s~ simulator?" });
+	//menu.Submenu("Object manipulator", ObjectMan, { "Spawn and edit objects." });
 	menu.Submenu("Misc. options", miscOptions, { "Options where they ~c~don't really belong~s~." });
-	menu.Submenu("Shooter options", shooterOptions, { "This is for you, NUP." });
-	menu.Submenu("Settings", settings, { "Customize ~c~Alpha~s~ to your own liking." });
+	//menu.Submenu("Shooter options", shooterOptions, { "This is for you, NUP." });
+	menu.Submenu("Settings", settings, { "Customize ~c~LUXX~s~ to your own liking." });
 }
 
 void CHack::mainLoop()

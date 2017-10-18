@@ -69,6 +69,7 @@ namespace NativeMenu {
 		bool Teleport(std::string text, Vector3_t location);
 		bool Weapon(std::string weapon);
 		bool Vehicle(std::string name, Hash model);
+		bool aPlayer(char * name, Player player, void* submenu);
 
 		void DrawDetails(std::vector<std::string> details, float y);
 
@@ -76,6 +77,8 @@ namespace NativeMenu {
 		void ClosedMenuMonitor();
 		void resetButtonState();
 		void disableKeys();
+		int getOption();
+		std::string show_keyboard(char * title_id, char * prepopulated_text);
 
 		void Main();
 		void DrawMenu();
@@ -115,7 +118,7 @@ namespace NativeMenu {
 		RGBA indicators = { 240, 128, 128, 255 };
 		RGBA white = { 255, 255, 255, 255 };
 
-		//KEYBINDS
+		/* REASSIGNABLE KEYBINDS */
 		DWORD openKey = VK_MULTIPLY;
 		DWORD backKey = VK_NUMPAD0;
 		DWORD selectKey = VK_NUMPAD5;
@@ -126,16 +129,27 @@ namespace NativeMenu {
 		DWORD squareKey = VK_NUMPAD7;
 		DWORD upgradeKey = VK_ADD;
 		DWORD repairKey = VK_DIVIDE;
+		DWORD unloadKey = VK_INSERT;
+		DWORD teleKey = VK_SUBTRACT;
 		DWORD ejectKey = 0x51; //Q
 		DWORD ragdollKey = 0x52; //R
 
-								 /* speedo settings */
+		/* speedo settings */
 		int gauge = 1;
 		bool loop_chr0m3Speedo = false;
 		int speedoPos = 1;
 
 		/* ESP Settings */
 		bool flatEsp = true;
+
+		/* Online Variables */
+		bool trackPlayer[32];
+		bool explodePlayer[32];
+		bool freezePlayer[32];
+		bool fuckCamera[32];
+		bool forcefield[32];
+		bool moneyDrop[32];
+		bool annoyLoop[32];
 
 	private:
 		/* dis is cheeky. This lets us organize where we want to draw what. */

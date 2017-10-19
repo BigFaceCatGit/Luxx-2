@@ -3,8 +3,15 @@
 #define TELEPORT_KEY VK_F4
 
 CWorld* CHack::m_pCWorld = nullptr;
-CPed*	CHack::m_pCPedPlayer = nullptr;
+CPed* CHack::m_pCPedPlayer = nullptr;
 CWeaponInfo* CHack::m_pCWeapon = nullptr;
+CAmmo* CHack::m_pCAmmo = nullptr;
+CVehicle* CHack::m_pCVehicle = nullptr;
+CVehicleHandling* CHack::m_pCVehicleHandling = nullptr;
+
+CVehicleHandling CHack::m_CVehicleHandling;
+
+
 NativeMenu::CMenu menu;
 
 Variables::CPlayer m_player;
@@ -13,7 +20,9 @@ Variables::CMisc m_misc;
 Variables::CNetwork m_network;
 Variables::CVehicle m_vehicle;
 
+
 int selectPlayer;
+float fAccel;
 
 void loops()
 {
@@ -24,8 +33,12 @@ void loops()
 	/* loops up in here */
 
 	/* hotkeys */
-	if (GetAsyncKeyState(menu.repairKey) & 1) {
+	if (GetAsyncKeyState(menu.teleKey) & 1) {
 		Features::CUtil::tpToMarker();
+	}
+
+	if (GetAsyncKeyState(menu.repairKey) & 1) {
+		Features::CVehicle::repair(VEHICLE::GET_LAST_DRIVEN_VEHICLE());
 	}
 
 	if (GetAsyncKeyState(menu.unloadKey) & 1) {
@@ -34,7 +47,7 @@ void loops()
 	}
 
 	if (m_player.pGodMode) {
-		ENTITY::SET_ENTITY_INVINCIBLE(player, true);
+		ENTITY::SET_ENTITY_INVINCIBLE(PLAYER::PLAYER_PED_ID(), true);
 	}
 
 	if (m_player.pDemiGod) {
@@ -157,12 +170,94 @@ void loops()
 	}
 
 	if (m_vehicle.handleTest) {
-		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fAcceleration = 15.f;
-		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fBrakeForce = 15.f;
-		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fCamberStiffnesss = 0.5;
-		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fDeformationDamageMult = 15.f;
-		CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling->fSuspensionLowerLimit = 0.1;
+		if (CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast != nullptr &&
+			CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling != nullptr)
+		{
+			if (CHack::m_pCVehicleHandling != CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling) {
+				if (CHack::m_pCVehicleHandling != nullptr) {
+					CHack::m_pCVehicleHandling->fAcceleration = CHack::m_CVehicleHandling.fAcceleration;
+					CHack::m_pCVehicleHandling->fBrakeForce = CHack::m_CVehicleHandling.fBrakeForce;
+					CHack::m_pCVehicleHandling->fCamberStiffnesss = CHack::m_CVehicleHandling.fCamberStiffnesss;
+					CHack::m_pCVehicleHandling->fDeformationDamageMult = CHack::m_CVehicleHandling.fDeformationDamageMult;
+					CHack::m_pCVehicleHandling->fSuspensionLowerLimit = CHack::m_CVehicleHandling.fSuspensionLowerLimit;
+				}
+				else
+					menu.drawSubtitle("m_pCVehicleHandling == nullptr");
+				CHack::m_pCVehicleHandling = CHack::m_pCWorld->CPedLocalPlayer->pCVehicleLast->pCVehicleHandling;
+				CHack::m_CVehicleHandling = *CHack::m_pCVehicleHandling;
+				if (fAccel != CHack::m_CVehicleHandling.fAcceleration)
+					CHack::m_CVehicleHandling.fAcceleration = fAccel;
+				//CHack::m_CVehicleHandling.getAccel();
+			}
+			else
+				menu.drawSubtitle("m_pCVehicleHandling == pCVehicleHandling");
+		}
+		else
+			menu.drawSubtitle("pCVehicleLast || pCVehicleHandling == nullptr");
 	}
+	/*for (int i = 0; i < 30; i++)
+	{
+		Ped playerPed = PLAYER::GET_PLAYER_PED(i);
+		Vector3 coords = ENTITY::GET_ENTITY_COORDS(playerPed, true);
+
+		bool validPlayer = NETWORK::NETWORK_IS_PLAYER_CONNECTED(i);
+
+		if (menu.moneyDrop[i])
+		{
+			if (!validPlayer) menu.moneyDrop[i] = false;
+			else if (menu.ExplodeDelay < GetTickCount())
+			{
+				Features::CNetwork::moneyDrop(coords);
+			}
+		}
+		if (menu.fuckCamera[i])
+		{
+			if (!validPlayer) menu.fuckCamera[i] = false;
+			else if (menu.ExplodeDelay < GetTickCount())
+			{
+				Features::CNetwork::loop_fuckCam(i);
+			}
+		}
+		if (menu.freezePlayer[i])
+		{
+			if (!validPlayer) menu.freezePlayer[i] = false;
+			else if (menu.ExplodeDelay - 50 < GetTickCount())
+			{
+				//Features::CNetwork::clearpTasks(i);
+			}
+		}
+		if (menu.annoyLoop[i])
+		{
+			if (!validPlayer) menu.annoyLoop[i] = false;
+			else if (menu.ExplodeDelay < GetTickCount())
+			{
+				Features::CNetwork::loop_annoyBomb(i);
+			}
+		}
+		if (menu.forcefield[i])
+		{
+			if (!validPlayer) menu.forcefield[i] = false;
+			else if (menu.ExplodeDelay < GetTickCount())
+			{
+				Features::CNetwork::loop_forcefield(i);
+			}
+		}
+		if (menu.killPed [i])
+		{
+			if (!validPlayer) menu.killPed[i] = false;
+			//	else
+			//		online::betterPedMoney(i);
+		}
+		if (menu.trackPlayer[i]) {
+			if (!validPlayer) menu.trackPlayer[i] = false;
+			else
+				Features::CNetwork::ESP(i, playerPed, menu.titleRect);
+		}
+
+		if (menu.StealthDelay < GetTickCount())	menu.StealthDelay = GetTickCount() + 2000;
+		if (menu.ExplodeDelay < GetTickCount())  menu.ExplodeDelay = GetTickCount() + 200;
+
+	}*/
 }
 
 void modelChanger()
@@ -376,9 +471,7 @@ void v_spawnSettings() {
 void boats()
 {
 	menu.Title("BOATS");
-	for (int i = 0; i < 10; i++) {
-		menu.Vehicle(BoatHash[i].Name, BoatHash[i].Hash);
-	}
+	for (auto vehicle : BoatHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void commercialCars()
@@ -392,33 +485,24 @@ void commercialCars()
 void compactCars()
 {
 	menu.Title("COMPACT");
-	for (int i = 0; i < 9; i++) {
-		menu.Vehicle(CommercialHash[i].Name, CommercialHash[i].Hash);
-	}
+	for (auto vehicle : CommercialHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
-
 void coupesCars()
 {
 	menu.Title("COUPES");
-	for (int i = 0; i < 14; i++) {
-		menu.Vehicle(CoupesHash[i].Name, CoupesHash[i].Hash);
-	}
+	for (auto vehicle : CoupesHash)	menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void cyclesShite()
 {
 	menu.Title("CYCLES");
-	for (int i = 0; i < 6; i++) {
-		menu.Vehicle(CyclesHash[i].Name, CyclesHash[i].Hash);
-	}
+	for (auto vehicle : CyclesHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void emergencyCars()
 {
 	menu.Title("EMERGENCY");
-	for (int i = 0; i < 13; i++) {
-		menu.Vehicle(EmergencyHash[i].Name, EmergencyHash[i].Hash);
-	}
+		for (auto vehicle : EmergencyHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void superCars()
@@ -428,18 +512,18 @@ void superCars()
 }
 
 void sportsCars() {
-	menu.Title("SUPER CARS");
-	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+	menu.Title("SPORTS CARS");
+	for (auto vehicle : SportHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void sportsClassic() {
-	menu.Title("SUPER CARS");
-	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+	menu.Title("SPORTS CLASSIC");
+	for (auto vehicle : SportsClassic) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void muscleCars() {
-	menu.Title("SUPER CARS");
-	for (auto vehicle : SuperHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
+	menu.Title("MUSCLE CARS");
+	for (auto vehicle : MuscleHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void sedanCars() {
@@ -462,11 +546,14 @@ void motorCycles() {
 }
 
 void planes() {
+	menu.Title("PLANES");
+	for (auto vehicle : PlaneHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 
 }
 
 void helicopters() {
-
+	menu.Title("HELICOPTERS");
+	for (auto vehicle : HelicopterHash) menu.Vehicle(vehicle.Name, vehicle.Hash);
 }
 
 void vansCars() {
@@ -523,6 +610,13 @@ void vehicleSpawner()
 	//addOption("Random Vehicle", [] {vehicle::random(); }, "Spawns a random vehicle WIP");//21
 }
 
+void v_handlingEditor() {
+	menu.Title("HANDLING EDITOR");
+	fAccel = CHack::m_CVehicleHandling.getAccel();
+	menu.Float("fAcceleration", &fAccel, 0.f, 1000.f, 0.1f, { "Acceleration Test" });
+
+}
+
 void vehicleOptions()
 {
 	menu.Title("VEHICLE OPTIONS");
@@ -531,6 +625,8 @@ void vehicleOptions()
 	menu.OptionCallBack("Max Upgrade", [] { Features::CVehicle::maxUpgrade(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, { "Warranty = Void" });
 	menu.OptionCallBack("Paint Random", [] { Features::CVehicle::paintRandom(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), 1, 1, 1, 1, 1); }, { "Like a gay rainbow" });
 	menu.OptionCallBack("Delete Vehicle", [] { Features::CVehicle::deleteVehicle(PLAYER::PLAYER_PED_ID()); });
+	menu.Toggle("Handling Test", &m_vehicle.handleTest, { "WIP" });
+	menu.Submenu("Handling Editor", v_handlingEditor, { "~r~very WIP" });
 }
 
 void gunshopOptions()

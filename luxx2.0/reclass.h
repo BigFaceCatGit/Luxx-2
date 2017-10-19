@@ -375,6 +375,7 @@ public:
 		this->btStolen &= 0xFEu;
 		this->btStolen |= toggle & 1;
 	}
+
 }; //Size=0x0BC0
 
 class CWantedData
@@ -759,6 +760,10 @@ public:
 	float fEngineDamageMult; //0x00FC 
 	float fPetrolTankVolume; //0x0100 
 	float fOilVolume; //0x0104 
+
+	float getAccel() {
+		return fAcceleration;
+	}
 
 }; //Size=0x0108
 

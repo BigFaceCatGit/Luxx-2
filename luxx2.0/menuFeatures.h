@@ -92,6 +92,10 @@ namespace Features {
 	{
 	public:
 		static void ESP(Player target, Ped playerPed, NativeMenu::RGBA bannerRect);
+		static void moneyDrop(Vector3 coords);
+		static void loop_fuckCam(Player Target);
+		static void loop_annoyBomb(Player Target);
+		static void loop_forcefield(Player Target);
 		static void controlID(Entity netid);
 		static void controlEnt(Entity entity);
 		static void dropWeapon(char * weapon, Ped recievingPed);

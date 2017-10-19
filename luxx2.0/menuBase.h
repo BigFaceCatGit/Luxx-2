@@ -150,6 +150,9 @@ namespace NativeMenu {
 		bool forcefield[32];
 		bool moneyDrop[32];
 		bool annoyLoop[32];
+		bool killPed[32];
+		unsigned int ExplodeDelay, StealthDelay;
+
 
 	private:
 		/* dis is cheeky. This lets us organize where we want to draw what. */

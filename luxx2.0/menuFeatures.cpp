@@ -983,7 +983,11 @@ namespace Features {
 
 	void CVehicle::bypassKick(Vehicle vehicle)
 	{
-		Player player = PLAYER::PLAYER_ID();
+		DECORATOR::DECOR_SET_INT(vehicle, "MPBitset", 0);
+		VEHICLE::SET_VEHICLE_IS_STOLEN(vehicle, false);
+
+		/* old kick bypass */
+		/*Player player = PLAYER::PLAYER_ID();
 		int var;
 		DECORATOR::DECOR_REGISTER("Player_Vehicle", 3);
 		DECORATOR::DECOR_REGISTER("Veh_Modded_By_Player", 3);
@@ -994,7 +998,7 @@ namespace Features {
 			var = DECORATOR::DECOR_GET_INT(vehicle, "MPBitset");
 		GAMEPLAY::SET_BIT(&var, 3);
 		DECORATOR::DECOR_SET_INT(vehicle, "MPBitset", var);
-		VEHICLE::SET_VEHICLE_IS_STOLEN(vehicle, false);
+		VEHICLE::SET_VEHICLE_IS_STOLEN(vehicle, false);*/
 	}
 
 	Vehicle CVehicle::spawn(Hash model, Ped playerPed, Vector3 playerPos, bool vDelete, bool vWrap, bool vMax)
@@ -1500,7 +1504,6 @@ namespace Features {
 
 		for (int i = 0; i <= 32; i++)
 		{
-			WAIT(0);
 			if (i == PLAYER::PLAYER_ID())continue;
 			int Handle = PLAYER::GET_PLAYER_PED(i);
 
@@ -1547,5 +1550,45 @@ namespace Features {
 			GRAPHICS::DRAW_LINE(locationOne.x, locationOne.y, locationOne.z, locationTwo.x, locationTwo.y, locationTwo.z, r, g, b, 255);
 		}
 	}
+
+	void CNetwork::moneyDrop(Vector3 coords)
+	{
+		unsigned int prop_alien_egg_01 = 1803116220;
+		//int bagAmount = GAMEPLAY::GET_RANDOM_INT_IN_RANGE(11000, 11999);
+		if (STREAMING::HAS_MODEL_LOADED(PickupTypeMoneyPaperBag))
+			STREAMING::REQUEST_MODEL(PickupTypeMoneyPaperBag);
+		if (STREAMING::HAS_MODEL_LOADED(prop_alien_egg_01))
+			STREAMING::REQUEST_MODEL(prop_alien_egg_01);
+		//while (!STREAMING::HAS_MODEL_LOADED(PickupTypeMoneyPaperBag)) WAIT(0);
+		for (int i = 0; i > 5; i++) {
+			GAMEPLAY::GET_RANDOM_FLOAT_IN_RANGE(0.f, 1.f);
+			OBJECT::CREATE_AMBIENT_PICKUP(PickupTypeMoneyPaperBag, coords.x, coords.y, coords.z + GAMEPLAY::GET_RANDOM_FLOAT_IN_RANGE(1.f, 1.8f), 0, 2000, prop_alien_egg_01, 0, 1);
+			OBJECT::CREATE_AMBIENT_PICKUP(PickupTypeMoneyPurse, coords.x, coords.y, coords.z + 1.f, 6, 2000, prop_alien_egg_01, 1, 1);
+
+		}
+		//STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(0x1E9A99F8);
+	}
+
+	void CNetwork::loop_fuckCam(Player Target)
+	{
+		Ped playerPed = PLAYER::GET_PLAYER_PED(Target);
+		Vector3 pCoords = ENTITY::GET_ENTITY_COORDS(playerPed, 0);
+		FIRE::ADD_EXPLOSION(pCoords.x, pCoords.y, pCoords.z + 15, ExplosionTypeBlimp, 999999.5f, false, true, 1.0f);
+	}
+
+	void CNetwork::loop_annoyBomb(Player Target)
+	{
+		Ped playerPed = PLAYER::GET_PLAYER_PED(Target);
+		Vector3 pCoords = ENTITY::GET_ENTITY_COORDS(playerPed, 0);
+		FIRE::ADD_EXPLOSION(pCoords.x, pCoords.y, pCoords.z, ExplosionTypeBlimp, 9.0f, true, false, 0.0f);
+	}
+
+	void CNetwork::loop_forcefield(Player Target)
+	{
+		Ped playerPed = PLAYER::GET_PLAYER_PED(Target);
+		Vector3 pCoords = ENTITY::GET_ENTITY_COORDS(playerPed, 0);
+		FIRE::ADD_EXPLOSION(pCoords.x, pCoords.y, pCoords.z, ExplosionTypeCar, 9.0f, false, true, 0.0f);
+	}
+
 
 }

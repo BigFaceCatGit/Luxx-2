@@ -42,8 +42,15 @@ namespace NativeMenu {
 	class CMenu
 	{
 	public:
-		CMenu();
+		CMenu(bool unk);
+		CMenu(Variables::CPlayer &m_player, Variables::CWeapon &m_weapon, Variables::CMisc &m_misc, Variables::CNetwork &m_network, Variables::CVehicle &m_vehicle);
 		~CMenu();
+		
+		Variables::CPlayer* p_player;
+		Variables::CWeapon* p_weapon;
+		Variables::CMisc* p_misc;
+		Variables::CNetwork* p_network;
+		Variables::CVehicle* p_vehicle;
 
 		void nextOption();
 		void previousOption();
@@ -59,7 +66,8 @@ namespace NativeMenu {
 		void menuBeep(std::string sound);
 
 		void Title(std::string title, std::string textureDict = {}, std::string textureName = {});
-		bool Submenu(std::string text, void* submenu, std::vector<std::string> details);
+		bool Submenu(std::string text, void* submenu, std::vector<std::string> details, void* sqaureMenu = {});
+		bool HotKey(std::function<void()> function, DWORD hotKey);
 		bool Option(std::string text, std::vector<std::string> details = {});
 		bool OptionCallBack(std::string text, std::function<void()> function, std::vector<std::string> details = {});
 		bool Toggle(std::string text, bool* boolean, std::vector<std::string> details = {});
@@ -68,7 +76,10 @@ namespace NativeMenu {
 		bool Float(std::string text, float* var, float min, float max, float step = 0.1f, std::vector<std::string> details = {});
 		bool Teleport(std::string text, Vector3_t location);
 		bool Weapon(std::string weapon);
-		bool Vehicle(std::string name, Hash model);
+		bool AddFavourite(Hash model);
+		bool aVehicle(std::string name, Hash model);
+		bool VehicleModType(Vehicle vehicle, int modType, void* mRef);
+		bool VehicleMod(int modValue);
 		bool aPlayer(char * name, Player player, void* submenu);
 
 		void DrawDetails(std::vector<std::string> details, float y);
@@ -153,6 +164,7 @@ namespace NativeMenu {
 		bool killPed[32];
 		unsigned int ExplodeDelay, StealthDelay;
 
+		bool gotoFav = true;
 
 	private:
 		/* dis is cheeky. This lets us organize where we want to draw what. */
@@ -201,6 +213,7 @@ namespace NativeMenu {
 		int optionCount = 0;
 		int currentOption = 0;
 		bool optionPress = false;
+		bool sqaurePress = false;
 		bool leftPress = false;
 		bool rightPress = false;
 		bool upPress = false;

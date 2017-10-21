@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Hack.h"
 
 Scaleform gGlareHandle;
 
@@ -8,9 +9,22 @@ constexpr char* menuVersion = "Version: 2.0.1";
 
 namespace NativeMenu {
 
-	CMenu::CMenu() { }
+	CMenu::CMenu(bool unk) { }
+	CMenu::CMenu(Variables::CPlayer &m_player, Variables::CWeapon &m_weapon, Variables::CMisc &m_misc, Variables::CNetwork &m_network, Variables::CVehicle &m_vehicle) {
+		p_player = &m_player;
+		p_weapon = &m_weapon;
+		p_misc = &m_misc;
+		p_network = &m_network;
+		p_vehicle = &m_vehicle;
+	}
 
 	CMenu::~CMenu() { }
+
+	//Variables::CPlayer* p_player = m_player;
+	//Variables::CWeapon* p_weapon = m_weapon;
+	//Variables::CMisc* p_misc = m_misc;
+	//Variables::CNetwork* p_network = m_network;
+	//Variables::CVehicle* p_vehicle = m_vehicle;
 
 	void CMenu::nextOption()
 	{
@@ -123,7 +137,7 @@ namespace NativeMenu {
 		}
 	}
 
-	bool CMenu::Submenu(std::string text, void* submenu, std::vector<std::string> details)
+	bool CMenu::Submenu(std::string text, void* submenu, std::vector<std::string> details, void* sqaureMenu)
 	{
 		Option(text, details);
 
@@ -164,8 +178,25 @@ namespace NativeMenu {
 			);
 		}
 
-		if (optionPress && currentOption == optionCount) {
-			changeSubmenu(submenu);
+		if (thisOption) {
+			if (optionPress) {
+				changeSubmenu(submenu);
+				return true;
+			}
+			else if (sqaurePress) {
+				if (this->gotoFav)
+					changeSubmenu(sqaureMenu);
+				else
+					Features::CVehicle::manualSelect(1);
+				return true;
+			}
+			return false;
+		}
+	}
+
+	bool CMenu::HotKey(std::function<void()> function, DWORD hotKey) {
+		if (GetAsyncKeyState(hotKey) & 1) {
+			function();
 			return true;
 		}
 		return false;
@@ -255,9 +286,7 @@ namespace NativeMenu {
 		}*/
 
 		if (*boolean) {
-			optionColours.r = 30;
-			optionColours.g = 144;
-			optionColours.b = 255;
+			optionColours = optionCounterColour;
 		}
 		else {
 			optionColours.r = 14; //80
@@ -596,25 +625,187 @@ namespace NativeMenu {
 		return vehicle;
 	}*/
 
-	bool CMenu::Vehicle(std::string name, Hash model)
+	bool CMenu::AddFavourite(Hash model) {
+
+		if (std::find(p_vehicle->fVehicles.begin(), p_vehicle->fVehicles.end(), model) != p_vehicle->fVehicles.end()) {
+			/* vector already contains vehicle */
+			menuBeep("NO");
+			return false;
+		}
+		else {
+			/* vector does not contain vehicle */
+			p_vehicle->fVehicles.push_back(model );
+			menuBeep("OK");
+			return true;
+		}
+	}
+
+	bool CMenu::aVehicle(std::string name, Hash model)
 	{
 		Vector3 pos = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), true);
 		Option(name);
 
 		if (!STREAMING::IS_MODEL_IN_CDIMAGE(model)) return 0;
 
+		if (currentOption == optionCount) {
+
+			if (optionPress) {
+				resetButtonState();
+
+				if (!STREAMING::HAS_MODEL_LOADED(model)) {
+					STREAMING::REQUEST_MODEL(model);
+					WAIT(0);
+				}
+
+				Features::CVehicle::spawn(model, PLAYER::PLAYER_PED_ID(), p_vehicle->sDelete, p_vehicle->sWrap, p_vehicle->sMax);
+				return true;
+			}
+			else if (sqaurePress) {
+				resetButtonState();
+
+				/* Adds Hovered vehicle to Favourite Vehicle Vector */
+				if (!AddFavourite(model))
+					Features::CUtil::notifyError("Vehicle is already in Favourites");
+				else
+					return true;
+			}
+			return false;
+		}
+	}
+
+	bool CMenu::VehicleModType(Vehicle vehicle, int modType, void* mRef) {
+
+		if (!VEHICLE::GET_NUM_VEHICLE_MODS(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), modType) > 1)
+			return false;
+
+		char* name;
+
+		switch (modType) {
+
+		default: name = VEHICLE::GET_MOD_SLOT_NAME(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), modType); break;
+		case 11: name = "Engine"; break;
+		case 12: name = "Brakes"; break;
+		case 13: name = "Transmission"; break;
+		case 14: name = "Horns"; break;
+		case 15: name = "Suspension"; break;
+		case 16: name = "Armour"; break;
+		}
+
+		Option(name, {});
+
+		bool thisOption = false;
+
+		if (currentOption == optionCount)
+			thisOption = true;
+
+		char* arrowTexture;
+
+		if (thisOption) {
+			arrowTexture = "arrowright";
+		}
+		else {
+			arrowTexture = "arrowright";
+		}
+
+		bool doDraw = false;
+		float textureY;
+
+		if (currentOption <= 16 && optionCount <= 16) {
+			doDraw = true;
+			textureY = (optionCount * optionHeight + (menuy + 0.016f));
+		}
+		else if ((optionCount > (currentOption - 16)) && optionCount <= currentOption) {
+			doDraw = true;
+			textureY = ((optionCount - (currentOption - 16)) * optionHeight + (menuy + 0.016f));
+		}
+
+		if (doDraw) {
+			int resX, resY;
+			GRAPHICS::_GET_ACTIVE_SCREEN_RESOLUTION(&resX, &resY);
+			float ratio = (float)resX / (float)resY;
+			float boxSz = 0.020f; //25
+			foregroundDrawCalls.push_back(
+				std::bind(&CMenu::DrawSprite, this, "commonmenu", arrowTexture,
+					menux + menuWidth / 2.0f - optionRightMargin, (textureY + mainoptiony), boxSz / ratio, boxSz, 0.0f, thisOption ? optionCounterColour : options)
+			);
+		}
+
+		if (thisOption) {
+			if (optionPress) {
+
+				changeSubmenu(mRef);
+				p_vehicle->sMod = modType;
+				p_vehicle->sModName = name;
+				p_vehicle->sVehicle = vehicle;
+				return true;
+			}
+			else if (sqaurePress) {
+				VEHICLE::SET_VEHICLE_MOD(vehicle, modType, VEHICLE::GET_NUM_VEHICLE_MODS(vehicle, modType) - 1, 1);
+				return true;
+			}
+			return false;
+		}
+	}
+
+	int lModType, lModIndex;
+	Vehicle lVeh;
+
+	bool CMenu::VehicleMod(int modValue) {
+
+		std::string name = "Stock";
+		if (modValue != -1)
+			name = UI::_GET_LABEL_TEXT(VEHICLE::GET_MOD_TEXT_LABEL(p_vehicle->sVehicle, p_vehicle->sMod, modValue));
+
+		Option(name, {});
+
+		/* To show currently installed mod */
+		bool matching = modValue == VEHICLE::GET_VEHICLE_MOD(p_vehicle->sVehicle, p_vehicle->sMod);
+
+		bool thisOption = false;
+
+		if (currentOption == optionCount)
+			thisOption = true;
+
+		char* arrowTexture;
+
+		if (thisOption) {
+			arrowTexture = "arrowright";
+		}
+		else {
+			arrowTexture = "arrowright";
+		}
+
+		bool doDraw = false;
+		float textureY;
+
+		if (currentOption <= 16 && optionCount <= 16) {
+			doDraw = true;
+			textureY = (optionCount * optionHeight + (menuy + 0.016f));
+		}
+		else if ((optionCount > (currentOption - 16)) && optionCount <= currentOption) {
+			doDraw = true;
+			textureY = ((optionCount - (currentOption - 16)) * optionHeight + (menuy + 0.016f));
+		}
+
+		if (doDraw && matching) {
+			int resX, resY;
+			GRAPHICS::_GET_ACTIVE_SCREEN_RESOLUTION(&resX, &resY);
+			float ratio = (float)resX / (float)resY;
+			float boxSz = 0.020f; //25
+			foregroundDrawCalls.push_back(
+				std::bind(&CMenu::DrawSprite, this, "commonmenu", arrowTexture,
+					menux + menuWidth / 2.0f - optionRightMargin, (textureY + mainoptiony), boxSz / ratio, boxSz, 0.0f, thisOption ? optionCounterColour : options)
+			);
+		}
+
+
 		if (optionPress && currentOption == optionCount) {
 			resetButtonState();
-
-			if (!STREAMING::HAS_MODEL_LOADED(model)) {
-				STREAMING::REQUEST_MODEL(model);
-				WAIT(0);
-			}
-
-			Features::CVehicle::spawn(model, PLAYER::PLAYER_PED_ID(), 1, 1, 0);
+			VEHICLE::SET_VEHICLE_MOD(p_vehicle->sVehicle, p_vehicle->sMod, modValue, 1);
 			return true;
 		}
 		return false;
+
 	}
 
 	bool CMenu::aPlayer(char *name, Player player, void* submenu)
@@ -687,6 +878,7 @@ namespace NativeMenu {
 
 	void CMenu::resetButtonState() {
 		optionPress = false;
+		sqaurePress = false;
 		leftPress = false;
 		rightPress = false;
 		upPress = false;
@@ -888,6 +1080,7 @@ namespace NativeMenu {
 			}
 		}
 
+		/* select */
 		if (GetAsyncKeyState(selectKey) & 1) {
 			menuBeep("SELECT");
 			resetButtonState();
@@ -904,6 +1097,12 @@ namespace NativeMenu {
 		if (GetAsyncKeyState(rightKey) & 1) {
 			menuBeep("NAV_UP_DOWN");
 			rightPress = true;
+		}
+
+		/* sqaure */
+		if (GetAsyncKeyState(squareKey) & 1) {
+			menuBeep("SELECT");
+			sqaurePress = true;
 		}
 	}
 

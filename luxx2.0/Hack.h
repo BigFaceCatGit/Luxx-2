@@ -18,6 +18,12 @@ public:
 	static CVehicle m_CVehicle;
 	static CVehicleHandling m_CVehicleHandling;
 
+	static Variables::CPlayer m_player;
+	static Variables::CWeapon m_weapon;
+	static Variables::CMisc m_misc;
+	static Variables::CNetwork m_network;
+	static Variables::CVehicle m_vehicle;
+
 	/* our main loop */
 	static void mainLoop();
 };

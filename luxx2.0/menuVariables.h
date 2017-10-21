@@ -52,9 +52,38 @@ namespace Variables
 	class CVehicle
 	{
 	public:
-		bool vehSpawnDelete = true;
-		bool vehWrapInSpawned = true;
-		bool vehSpawnMaxed = false;
+		/* Spawn Variables */
+		bool sDelete = true; //Deletes old vehicle
+		bool sWrap = true; //Wraps in to new vehicle
+		bool sMax = false; //Max Upgrades new vehicle
+		bool sPlaneAir = false; //Spawns Plane in air
+		bool sNeon = false; //Spawns new vehicle with default Neon
+
+		/* Stores Hash and Name of Vehicle */
+		struct vStore {
+			std::string Name;
+			Hash Hash;
+		};
+		/* Stores Favourite Vehicles in Vector */
+		std::vector<Hash> fVehicles;
+
+		/* Rainbow Val Stuff */
+		bool rActive = false;
+		bool rFade = true;
+		bool rBody = true;
+		bool rNeon = true;
+		bool rTyre = true;
+		bool rPrimary = true;
+		bool rSecondary = true;
+		bool rMenu = false;
+		int rUpdate;
+
+		/* ModShop Variables */
+		int sMod = 0; //Currently Selected Mod
+		char* sModName = "*invalid*";
+		Vehicle sVehicle;
+
+		/* Handling Shit Goes Here */
 		float accelMult = 1.f;
 		bool handleTest;
 	};

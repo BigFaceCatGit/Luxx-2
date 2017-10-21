@@ -407,6 +407,7 @@ void CHooking::unLoad()
 	clearRenderTargetHook->UnHook();
 
 	CLog::Message("Unhooking successful.");
+	NativeMenu::CMenu::drawSubtitle("Unloading...");
 
 	//not really needed, unless you want it for debugging
 	//MessageBox(nullptr, "Unhooked sucessfully", "Success!", MB_OK);

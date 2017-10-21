@@ -156,6 +156,7 @@ namespace Features {
 		static bool deleteVehicle(Ped ped);
 		static void setPlateText(Vehicle vehicle);
 		static void manualSelect(bool playerType);
+		void loop_rainbow(Vehicle vehicle, NativeMenu::CMenu & menu);
 	};
 
 	class CUtil
@@ -188,7 +189,7 @@ namespace Features {
 		static void saveConfig(bool notify, NativeMenu::CMenu &menu);
 		static std::string ReadIniKey(std::string section, std::string key);
 		static std::string ReadIniKey(std::string fileName, std::string section, std::string key);
-		static bool DoesKeyExist(std::string section, std::string key);
+		static bool DoesKeyExist(std::string section, std::string key, std::string fileName = (std::string)"config");
 		static NativeMenu::RGBA ReadINIRGBA(std::string section, std::string key);
 		static std::string ReadPresetKey(std::string name, std::string section, std::string key);
 		static bool DoesPresetKeyExists(std::string name, std::string section, std::string key);

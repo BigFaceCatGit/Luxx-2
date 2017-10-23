@@ -321,7 +321,7 @@ HRESULT __stdcall hookD3D11Present(IDXGISwapChain* pSwapChain, UINT SyncInterval
 		firstTime = false;
 	}
 	pFontWrapper->DrawString(pContext, L"POLYHOOK BIATCH", 12.0f, 14.0f, 16.0f, LIGHTRED, FW1_RESTORESTATE);
-
+	
 	return phookD3D11Present(pSwapChain, SyncInterval, Flags);
 }
 
@@ -410,5 +410,5 @@ void CHooking::unLoad()
 	NativeMenu::CMenu::drawSubtitle("Unloading...");
 
 	//not really needed, unless you want it for debugging
-	//MessageBox(nullptr, "Unhooked sucessfully", "Success!", MB_OK);
+	//MessageBox(nullptr, (LPCWSTR)"Unhooked sucessfully", (LPCWSTR)"Success!", MB_OK);
 }

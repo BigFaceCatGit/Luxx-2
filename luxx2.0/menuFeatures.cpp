@@ -2,7 +2,12 @@
 
 
 namespace Features {
+
 	NativeMenu::CMenu l_menu(1);
+	/* Initiate Ini Stuff */
+	Ini config("config");
+	Ini fVeh("favourite", "LUXX\\Vehicles\\");
+	Ini theme("theme");
 
 	/* private declerations */
 	void giveWeaponAddon(Ped ped, Hash weapon);
@@ -213,13 +218,13 @@ namespace Features {
 	}*/
 
 	void CUtil::saveTheme(bool notify, NativeMenu::CMenu &menu) {
-		CUtil::WriteINIRGBA(menu.titleRect, "Theme", "Banner");
-		CUtil::WriteINIRGBA(menu.titleText, "Theme", "BannerTextCol");
-		CUtil::WriteINIRGBA(menu.secondTitleText, "Theme", "Background");
-		CUtil::WriteINIRGBA(menu.options, "Theme", "OptionCol");
-		CUtil::WriteINIRGBA(menu.optionCounterColour, "Theme", "Scroller");
-		CUtil::WriteINIRGBA(menu.indicators, "Theme", "Indicator");
-		//CUtil::WriteINIRGBA(menu.hi, "Theme", "Highlight");
+		theme.write_rgba(menu.titleRect, "Head", "Banner");
+		theme.write_rgba(menu.titleText, "Head", "BannerTextCol");
+		theme.write_rgba(menu.options, "Body", "OptionCol");
+		theme.write_rgba(menu.scroller, "Body", "Scroller");
+		theme.write_rgba(menu.mainColour, "Body", "Highlight");
+		theme.write_rgba(menu.indicators, "Footer", "Indicator");
+		//theme.write_rgba(menu.bac, "Theme", "Background");
 		//WriteINI("Theme", "BannerTextureName", static_cast<ostringstream*>(&(ostringstream() << BannertextureName))->str());
 		//WriteINI("Theme", "FooterTextureName", static_cast<ostringstream*>(&(ostringstream() << FootertextureName))->str());
 		//WriteINI("Theme", "MaxOptions", IntToString(maxOptions));
@@ -398,13 +403,13 @@ namespace Features {
 	}
 
 	void CUtil::loadTheme(bool notify, NativeMenu::CMenu &menu) {
-		menu.titleRect = ReadINIRGBA("Theme", "Banner");
-		menu.titleText = ReadINIRGBA("Theme", "BannerTextCol");
-		//background = ReadINIRGBA("Theme", "Background");
-		menu.options = ReadINIRGBA("Theme", "OptionCol");
-		menu.optionCounterColour = ReadINIRGBA("Theme", "Scroller");
-		menu.indicators = ReadINIRGBA("Theme", "Indicator");
-		//highlightCol = ReadINIRGBA("Theme", "Highlight");
+		menu.titleRect = theme.read_rgba("Banner", "Banner");
+		menu.titleText = theme.read_rgba("Banner", "BannerTextCol");
+		menu.options = theme.read_rgba("Body", "OptionCol");
+		menu.scroller = theme.read_rgba("Body", "Scroller");
+		menu.mainColour = theme.read_rgba("Body", "Highlight");
+		menu.indicators = theme.read_rgba("Footer", "Indicator");
+		//background = theme.read_rgba("Theme", "Background");
 		//BannertextureName = &ReadIniKey("Theme", "BannerTextureName")[0u];
 		//FootertextureName = &ReadIniKey("Theme", "FooterTextureName")[0u];
 		//maxOptions = internals::StoI(&ReadIniKey("Theme", "MaxOptions")[0u]);
@@ -1678,3 +1683,57 @@ namespace Features {
 		}
 
 }
+
+class VehicleInfo {
+private:
+	/* Meta Info */
+	std::string mName;				//Meta Plaintext Model Name
+	std::string cName;				//Meta User-Defined Name
+	Hash hash;						//Meta DWORD Model Hash
+
+	/* Paint */
+	int hColour;					//Paint HUD Colour
+	int hLightColour;				//Paint HUD Light Colour
+	int priType;					//Paint Primary Type
+	int priCol;						//Paint	Primaty Colour
+	int secType;					//Paint Secondary Type
+	int secCol;						//Paint Secondary Colour
+	int secR = 0; 					//Paint Secondary R Val (0-255)
+	int secG = 0; 					//Paint Secondary G Val (0-255)
+	int secB = 0; 					//Paint Secondary B Val (0-255)
+	int priR = 0; 					//Paint Primary R Val (0-255)
+	int priG = 0; 					//Paint Primary G Val (0-255)
+	int priB = 0;					//Paint Primary B Val (0-255)
+	int Prnd;						//Paint
+	int pCol;						//Paint Pearlescent Colour
+	int wCol;						//Paint Wheel Colour
+
+	bool nEnabled;					//Paint Neon Enabled
+	int neonR = 255;				//Paint Neon R Val (0-255)
+	int neonG = 255;				//Paint Neon G Val (0-255)
+	int neonB = 255;				//Paint Neon B Val (0-255)
+	int smokeR = 255;				//Paint Tyre Smoke R Val (0-255)
+	int smokeG = 255;				//Paint Tyre Smoke G Val (0-255)
+	int smokeB = 255;				//Paint Tyre Smoke B Val (0-255)
+
+	/* Mod Details */
+	int wType;						//MOD Wheel Type
+	int wTint;						//MOD Window Tint
+	int pIndex;						//MOD Plate Index
+	char* pText;					//MOD Plate Text
+
+	/* Handling Info */
+
+	/* Vehicle Meta */
+	float pFade;					//VMeta Paint Fade
+	float eHealth;					//VMeta Engine Health
+	bool tBullet;					//VMeta Bulletproof Tyres !GET_VEHICLE_TYRES_CAN_BURST(veh);
+	bool tCustom;					//VMeta Custom Tyres GET_VEHICLE_MOD_VARIATION(veh, 23);
+	bool eExist[10];				//VMeta Vehicle Extras Bool Array
+
+public:
+	VehicleInfo(Vehicle vehicle) {
+		this->hash = ENTITY::GET_ENTITY_MODEL(vehicle);
+		this->mName = UI::_GET_LABEL_TEXT(VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(this->hash));
+	}
+};

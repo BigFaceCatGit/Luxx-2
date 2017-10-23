@@ -606,8 +606,35 @@ void v_spawnSettings() {
 	p_menu->Toggle("Delete Old Vehicle", &m_vehicle.sDelete, { "~r~Deletes~s~ old Vehicle" });
 }
 
+Hash stoH(std::string str) {
+	DWORD doubleWord;
+	std::string dwordHexString = str;
+	std::stringstream dwordStream;
+	dwordStream << dwordHexString;
+	dwordStream >> std::hex >> doubleWord;
+	return doubleWord;
+}
+
+
+void v_refreshFav() {
+	
+	std::vector<std::string> tV;
+	int i2 = m_vehicle.fVehicles.size();
+	for (int i = 0; i <= i2; i++) {
+		tV[i] = m_vehicle.fVehicles[i];
+	}
+	//fVeh.write_v(tV, "Vehicles");
+
+	//tV = fVeh.returnList("Vehicles");
+	i2 = tV.size();
+	for (int i = 0; i <= i2; i++) {
+		m_vehicle.fVehicles[i] = stoH(tV[i]);
+	}
+}
+
 void v_favourite() {
 	p_menu->Title("FAVOURITE VEHICLES");
+	p_menu->OptionCallBack("Refresh List", [] { v_refreshFav(); });
 	for (auto vehicle : m_vehicle.fVehicles) p_menu->aVehicle(UI::_GET_LABEL_TEXT(VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(vehicle)), vehicle);
 }
 
@@ -651,6 +678,10 @@ void v_handlingEditor() {
 
 void v_modGeneric() {
 	p_menu->Title(m_vehicle.sModName);
+	if (VEHICLE::GET_VEHICLE_MOD_KIT(VEHICLE::GET_LAST_DRIVEN_VEHICLE()) != 0)
+	{
+		VEHICLE::SET_VEHICLE_MOD_KIT(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), 0);
+	}
 	for (int i = -1; i < VEHICLE::GET_NUM_VEHICLE_MODS(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), m_vehicle.sMod); i++) {
 		p_menu->VehicleMod(i);
 	}
@@ -672,7 +703,6 @@ void v_customs() {
 	}
 
 	p_menu->OptionCallBack("Factory Fresh", [] { m_pCVehicle->stockUpgrade(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, {});
-	
 	//p_menu->Submenu("Benny's Mods", Benny_Generic, {});
 	//p_menu->ToggleCallback("UNK17", VEHICLE::IS_TOGGLE_MOD_ON(GET_LAST_DRIVEN_VEHICLE(), MOD_UNK17), [] {TOGGLE_VEHICLE_MOD(GET_LAST_DRIVEN_VEHICLE(), MOD_UNK17, !VEHICLE::IS_TOGGLE_MOD_ON(GET_LAST_DRIVEN_VEHICLE(), MOD_UNK17)); }, "Greatly Increases Acceleration");
 	//p_menu->ToggleCallback("Turbo", VEHICLE::IS_TOGGLE_MOD_ON(GET_LAST_DRIVEN_VEHICLE(), MOD_TURBO), [] {TOGGLE_VEHICLE_MOD(GET_LAST_DRIVEN_VEHICLE(), MOD_TURBO, !VEHICLE::IS_TOGGLE_MOD_ON(GET_LAST_DRIVEN_VEHICLE(), MOD_TURBO)); }, "Greatly Increases Acceleration");
@@ -792,6 +822,10 @@ void colourVariant()
 	p_menu->Int("Blue", &p_menu->optionCounterColour.b, 0, 255, 1, { "Customize the ~b~blue~s~ channel." });
 }
 
+void tTest() {
+	p_menu->titleRect; //config.read_rgba("Theme", "Banner");
+}
+
 void settings()
 {
 	p_menu->Title("SETTINGS");
@@ -800,7 +834,7 @@ void settings()
 	p_menu->OptionCallBack("Reload Config", [] { m_pCUtil->loadConfig(1, *p_menu); });
 	p_menu->OptionCallBack("load header", [] {m_pCUtil->loadTheme(1, *p_menu); });
 	p_menu->OptionCallBack("Save Theme", [] { m_pCUtil->saveTheme(1, *p_menu); });
-	p_menu->OptionCallBack("Save Header", [] {m_pCUtil->WriteINIRGBA(p_menu->titleRect, "testes", "scrotum"); });
+	p_menu->OptionCallBack("Save scrot", [] {m_pCUtil->WriteINIRGBA(p_menu->titleRect, "testes", "scrotum"); });
 }
 
 MenuFunc NativeMenu::MAIN_MENU()

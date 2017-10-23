@@ -147,6 +147,7 @@
     <ClInclude Include="enums.h" />
     <ClInclude Include="Hack.h" />
     <ClInclude Include="Hooking.h" />
+    <ClInclude Include="Ini.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="menuFeatures.h" />
     <ClInclude Include="menuBase.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Hack.cpp" />
     <ClCompile Include="Hooking.cpp" />
+    <ClCompile Include="Ini.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="luxx2.0.cpp" />
     <ClCompile Include="menuBase.cpp" />

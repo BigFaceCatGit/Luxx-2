@@ -49,6 +49,7 @@ namespace Variables
 		bool noSpread = false;
 		bool noReload = false;
 	};
+
 	class CVehicle
 	{
 	public:

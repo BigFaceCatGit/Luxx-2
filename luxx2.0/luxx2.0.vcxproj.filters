@@ -84,6 +84,9 @@
     <ClInclude Include="shader.h">
       <Filter>Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="Ini.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -117,6 +120,9 @@
       <Filter>Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Log.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Ini.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
   </ItemGroup>

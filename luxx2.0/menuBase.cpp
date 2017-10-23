@@ -190,8 +190,8 @@ namespace NativeMenu {
 					Features::CVehicle::manualSelect(1);
 				return true;
 			}
-			return false;
 		}
+			return false;
 	}
 
 	bool CMenu::HotKey(std::function<void()> function, DWORD hotKey) {
@@ -675,10 +675,12 @@ namespace NativeMenu {
 
 	bool CMenu::VehicleModType(Vehicle vehicle, int modType, void* mRef) {
 
-		if (!VEHICLE::GET_NUM_VEHICLE_MODS(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), modType) > 1)
-			return false;
 
 		char* name;
+		bool thisOption = false;
+		char* arrowTexture;
+		bool doDraw = false;
+		float textureY;
 
 		switch (modType) {
 
@@ -693,22 +695,8 @@ namespace NativeMenu {
 
 		Option(name, {});
 
-		bool thisOption = false;
-
 		if (currentOption == optionCount)
 			thisOption = true;
-
-		char* arrowTexture;
-
-		if (thisOption) {
-			arrowTexture = "arrowright";
-		}
-		else {
-			arrowTexture = "arrowright";
-		}
-
-		bool doDraw = false;
-		float textureY;
 
 		if (currentOption <= 16 && optionCount <= 16) {
 			doDraw = true;
@@ -743,12 +731,9 @@ namespace NativeMenu {
 				VEHICLE::SET_VEHICLE_MOD(vehicle, modType, VEHICLE::GET_NUM_VEHICLE_MODS(vehicle, modType) - 1, 1);
 				return true;
 			}
-			return false;
 		}
+			return false;
 	}
-
-	int lModType, lModIndex;
-	Vehicle lVeh;
 
 	bool CMenu::VehicleMod(int modValue) {
 
@@ -769,10 +754,10 @@ namespace NativeMenu {
 		char* arrowTexture;
 
 		if (thisOption) {
-			arrowTexture = "arrowright";
+			arrowTexture = "shop_garage_icon_a";
 		}
 		else {
-			arrowTexture = "arrowright";
+			arrowTexture = "shop_garage_icon_b";
 		}
 
 		bool doDraw = false;

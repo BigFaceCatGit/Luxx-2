@@ -55,6 +55,12 @@ public:
 	/* Write the contents of a vector to file*/
 	bool write_v(std::vector<std::string> vector, std::string section, std::string key = "");
 
+	/* Write Hash (DWORD) to File Directly */
+	bool write_h(Hash hash, std::string section, std::string key);
+	
+	/* Writes Vehicle to File */
+	bool write_fav(fVehicle vehicle, int section);
+
 	/* Returns Value gathered through Section and Key of File Object*/
 	std::string read(std::string section, std::string key);
 
@@ -73,9 +79,22 @@ public:
 	/* Return Vector3 Value */
 	Vector3 read_v3(std::string section, std::string key);
 
+	/* Return Hashes Directly, Useful for Model or VK Codes etc. */
+	Hash read_h(std::string section, std::string key);
+
+	/* Returns a Vehicle Struct through file section */
+	fVehicle read_fav(int section);
+
 	/* Simple Bool return to check if Data Exists*/
 	bool keyExist(std::string key, std::string value);
-	int numObjects(std::string section, std::string key = "");
+
+	/* Returns an Integer of the number of valid items in a file, can be matched by Section->Index or Section->Key&Index */
+	int numKeys(std::string section, std::string key = "");
+
+	/* Returns the number of sections in a given file through matching keys */
+	int numSections(std::string key);
+
+	/* Returns a Vector List of generic items stored in strings */
 	std::vector<std::string> returnList(std::string section, std::string key = "");
 };
 

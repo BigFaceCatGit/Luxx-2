@@ -402,13 +402,13 @@ namespace Features {
 		return no;
 	}
 
-	void CUtil::loadTheme(bool notify, NativeMenu::CMenu &menu) {
-		menu.titleRect = theme.read_rgba("Banner", "Banner");
-		menu.titleText = theme.read_rgba("Banner", "BannerTextCol");
-		menu.options = theme.read_rgba("Body", "OptionCol");
-		menu.scroller = theme.read_rgba("Body", "Scroller");
-		menu.mainColour = theme.read_rgba("Body", "Highlight");
-		menu.indicators = theme.read_rgba("Footer", "Indicator");
+	void CUtil::loadTheme(bool notify, NativeMenu::CMenu* menu) {
+		menu->titleRect = theme.read_rgba("Head", "Banner");
+		menu->titleText = theme.read_rgba("Head", "BannerTextCol");
+		menu->options = theme.read_rgba("Body", "OptionCol");
+		menu->scroller = theme.read_rgba("Body", "Scroller");
+		menu->mainColour = theme.read_rgba("Body", "Highlight");
+		menu->indicators = theme.read_rgba("Footer", "Indicator");
 		//background = theme.read_rgba("Theme", "Background");
 		//BannertextureName = &ReadIniKey("Theme", "BannerTextureName")[0u];
 		//FootertextureName = &ReadIniKey("Theme", "FooterTextureName")[0u];
@@ -424,6 +424,10 @@ namespace Features {
 		//vehThemeActive = internals::StoI(&ReadIniKey("Theme", "ApplyToVehicle")[0u]);
 		if (notify)
 			notifyMap("Custom Theme Loaded", 0);
+	}
+
+	fVehicle CUtil::receiveVeh(int ind) {
+		return fVeh.read_fav(ind);
 	}
 
 	void CUtil::loadKeyBinds(bool notify, NativeMenu::CMenu &menu) {
@@ -497,19 +501,36 @@ namespace Features {
 	notifyMap("Rainbow Settings Loaded", 0);
 	}*/
 
-	void CUtil::loadConfig(bool notify, NativeMenu::CMenu &menu) {
+	void CUtil::loadConfig(bool notify, NativeMenu::CMenu *menu) {
 
 		//ejectForce = StringToFloat(ReadIniKey("Ejector Seat", "ejectForce"));
 		//LifelessRagdoll = internals::StoI(&ReadIniKey("Ragdoll", "LifelessRagdoll")[0u]);
 		//ToggleMode = internals::StoI(&ReadIniKey("Ragdoll", "ToggleMode")[0u]);
 		//CUtil::loadClock(0);
-		CUtil::loadKeyBinds(0, menu);
+		//CUtil::loadKeyBinds(0, menu);
 		//CUtil::loadRainbow(0);
 		//CUtil::loadSmoke(0);
-		CUtil::loadSpeedo(0, menu);
+		//CUtil::loadSpeedo(0, menu);
 		CUtil::loadTheme(0, menu);
 		if (notify)
 			notifyMap("~g~All Settings Loaded", 0);
+	}
+
+	void CUtil::addFavourite(Hash model, std::string name) {
+		int index = fVeh.numSections("model");
+		fVeh.write_fav({ model, name, "?" }, index);
+	}
+
+	std::vector<fVehicle> CUtil::REFRESH() {
+
+		std::vector<fVehicle> tmp;
+
+		tmp.clear();
+		tmp.shrink_to_fit();
+
+		for (int i = 0; i < fVeh.numSections("model"); i++) {
+			tmp.push_back(fVeh.read_fav(i));
+		}
 	}
 
 	static unsigned int lastSec = GetTickCount();

@@ -66,7 +66,7 @@ namespace Variables
 			Hash Hash;
 		};
 		/* Stores Favourite Vehicles in Vector */
-		std::vector<Hash> fVehicles;
+		std::vector<fVehicle> fVehicles;
 
 		/* Rainbow Val Stuff */
 		bool rActive = false;

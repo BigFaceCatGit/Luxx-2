@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "boost\lexical_cast.hpp"
 
 /* Returns the Documents Path (Credz to Force, not the nicest function but it works) */
 std::string DocumentsPath(bool trailing = 1) {
@@ -21,11 +22,11 @@ Ini::Ini(std::string name, std::string folder) {
 	this->filepath = DocumentsPath() + folder;
 	this->fullpath = this->filepath + name + ".ini";
 
-	if (!CreateDirectoryA(filepath.c_str(), NULL))
-		if (!std::ifstream(fullpath)) {
-			std::ofstream file(fullpath);
+	if (!CreateDirectoryA(filepath.c_str(), NULL)) {
+		if (this->exists()) {
 			this->write_d();
 		}
+	}
 }
 
 Ini::~Ini() { }
@@ -51,11 +52,12 @@ inline bool Ini::exists() {
 }
 
 bool Ini::write(std::string section, std::string key, std::string value) {
-
 	/* Checks if the file exists */
-	if (!std::ifstream(this->fullpath))
+	if (!std::ifstream(this->fullpath)) {
 		std::ofstream file(this->fullpath);
+		this->write_d();
 
+	}
 	/* Write Values to file*/
 	WritePrivateProfileStringA(section.c_str(), key.c_str(), value.c_str(), this->fullpath.c_str());
 
@@ -67,19 +69,11 @@ bool Ini::write_d() {
 }
 
 bool Ini::write_i(int integer, std::string section, std::string key) {
-
-	std::stringstream ss;
-	ss << integer;
-
-	return this->write(section, key, ss.str());
+	return this->write(section, key, boost::lexical_cast<std::string>(integer));
 }
 
 bool Ini::write_f(float flt, std::string section, std::string key) {
-
-	std::stringstream ss;
-	ss << flt;
-
-	return this->write(section, key, ss.str());
+	return this->write(section, key, boost::lexical_cast<std::string>(flt));
 }
 
 bool Ini::write_b(bool b00l, std::string section, std::string key) {
@@ -102,16 +96,23 @@ bool Ini::write_v3(Vector3 vector, std::string section, std::string key) {
 }
 
 bool Ini::write_v(std::vector<std::string> vector, std::string section, std::string key) {
-
 	for (int i = 0; i < vector.size(); i++) {
-
-		std::stringstream ss;
-		ss << i;
-
-		this->write(section, key + ss.str(), vector[i]);
+		this->write(section, key + boost::lexical_cast<std::string>(i), vector[i]);
 	}
-
 	return this->read(section, key + "0") == vector[0];
+}
+
+bool Ini::write_h(Hash hash, std::string section, std::string key) {
+	return this->write(section, key, boost::lexical_cast<std::string>(hash));
+}
+
+bool Ini::write_fav(fVehicle vehicle, int section) {
+
+	std::string sec = boost::lexical_cast<std::string>(section);
+
+	this->write_h(vehicle.hash, sec, "model");
+	this->write(sec, "name", vehicle.name);
+	return this->write(sec, "uName", vehicle.uName);
 }
 
 std::string Ini::read(std::string section, std::string key) {
@@ -163,11 +164,26 @@ Vector3 Ini::read_v3(std::string section, std::string key) {
 	};
 }
 
+Hash Ini::read_h(std::string section, std::string key) {
+	return std::stoul(this->read(section, key));
+}
+
+fVehicle Ini::read_fav(int section) {
+
+	std::string sec = boost::lexical_cast<std::string>(section);
+
+	Hash hash = this->read_h(sec, "model");
+	std::string name = this->read(sec, "name");
+	std::string uName = this->read(sec, "uName");
+
+	return { hash, name, uName };
+}
+
 bool Ini::keyExist(std::string section, std::string key) {
 	return this->read(section, key).length() > 0;
 }
 
-int Ini::numObjects(std::string section, std::string key) {
+int Ini::numKeys(std::string section, std::string key) {
 	int no = 0;
 	for (int i = 0; i < 150; i++) {
 		std::stringstream ss;
@@ -178,9 +194,20 @@ int Ini::numObjects(std::string section, std::string key) {
 	}
 	return no;
 }
+
+int Ini::numSections(std::string key) {
+	int no = 0;
+	for (int i = 0; i < 150; i++) {
+		if (this->keyExist(boost::lexical_cast<std::string>(i), key))
+			no++;
+		else return no;
+	}
+	return no;
+}
+
 std::vector<std::string> Ini::returnList(std::string section, std::string key) {
 	std::vector<std::string> returnV;
-	for (int i = 0; i <= numObjects(section, key); i++){
+	for (int i = 0; i <= numKeys(section, key); i++){
 		std::stringstream ss;
 		ss << i;
 		returnV.push_back(this->read(section, key + ss.str()));

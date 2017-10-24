@@ -134,6 +134,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;LUXX20_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Source\AdLibs\Boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -187,7 +188,7 @@
     <ResourceCompile Include="luxx2.0.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="D:\Source\FW1FontWrapper\FW1FontWrapper.lib" />
+    <Library Include="D:\Source\AdLibs\FW1FontWrapper\FW1FontWrapper.lib" />
     <Library Include="Poly\capstone.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

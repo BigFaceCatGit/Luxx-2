@@ -194,10 +194,13 @@ namespace Features {
 		static std::string ReadPresetKey(std::string name, std::string section, std::string key);
 		static bool DoesPresetKeyExists(std::string name, std::string section, std::string key);
 		static int GetNumberOfObjectFromFile(std::string name);
-		static void loadTheme(bool notify, NativeMenu::CMenu &menu);
+		static void loadTheme(bool notify, NativeMenu::CMenu *menu);
+		fVehicle receiveVeh(int ind);
 		static void loadKeyBinds(bool notify, NativeMenu::CMenu &menu);
 		static void loadSpeedo(bool notify, NativeMenu::CMenu &menu);
-		static void loadConfig(bool notify, NativeMenu::CMenu &menu);
+		static void loadConfig(bool notify, NativeMenu::CMenu *menu);
+		static void addFavourite(Hash model, std::string name);
+		std::vector<fVehicle> REFRESH();
 		static double CalcAverageTick();
 		static float CalcSpeed(bool mphOut, Vehicle veh);
 		static void printFPS();

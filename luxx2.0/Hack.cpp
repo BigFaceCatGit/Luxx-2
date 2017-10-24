@@ -38,6 +38,8 @@ NativeMenu::CMenu* p_menu = &menu;
 /* Currently Selected Player */
 Player selectPlayer;
 
+Ini theme("theme");
+
 /* Test Vars */
 float fAccel;
 
@@ -615,27 +617,16 @@ Hash stoH(std::string str) {
 	return doubleWord;
 }
 
-
-void v_refreshFav() {
-	
-	std::vector<std::string> tV;
-	int i2 = m_vehicle.fVehicles.size();
-	for (int i = 0; i <= i2; i++) {
-		tV[i] = m_vehicle.fVehicles[i];
-	}
-	//fVeh.write_v(tV, "Vehicles");
-
-	//tV = fVeh.returnList("Vehicles");
-	i2 = tV.size();
-	for (int i = 0; i <= i2; i++) {
-		m_vehicle.fVehicles[i] = stoH(tV[i]);
+void v_test() {
+	for (int i = 0; i < m_vehicle.fVehicles.size(); i++) {
+		m_vehicle.fVehicles[i] = m_pCUtil->receiveVeh(i);
 	}
 }
 
 void v_favourite() {
 	p_menu->Title("FAVOURITE VEHICLES");
-	p_menu->OptionCallBack("Refresh List", [] { v_refreshFav(); });
-	for (auto vehicle : m_vehicle.fVehicles) p_menu->aVehicle(UI::_GET_LABEL_TEXT(VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(vehicle)), vehicle);
+	p_menu->OptionCallBack("Refresh List", [] { v_test(); });
+	for (auto vehicle : m_vehicle.fVehicles) p_menu->aVehicle(vehicle.name, vehicle.hash);
 }
 
 void v_spawner()
@@ -831,10 +822,9 @@ void settings()
 	p_menu->Title("SETTINGS");
 	p_menu->Submenu("Main banner", mainRect, { "Customize the main banner." });
 	p_menu->Submenu("Colour variant", colourVariant, { "Customize the main colour." });
-	p_menu->OptionCallBack("Reload Config", [] { m_pCUtil->loadConfig(1, *p_menu); });
-	p_menu->OptionCallBack("load header", [] {m_pCUtil->loadTheme(1, *p_menu); });
+	p_menu->OptionCallBack("Reload Config", [] { m_pCUtil->loadConfig(1, p_menu); });
+	p_menu->OptionCallBack("load header", [] {m_pCUtil->loadTheme(1, p_menu); });
 	p_menu->OptionCallBack("Save Theme", [] { m_pCUtil->saveTheme(1, *p_menu); });
-	p_menu->OptionCallBack("Save scrot", [] {m_pCUtil->WriteINIRGBA(p_menu->titleRect, "testes", "scrotum"); });
 }
 
 MenuFunc NativeMenu::MAIN_MENU()

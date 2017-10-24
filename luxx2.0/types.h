@@ -90,6 +90,12 @@ typedef struct
 } Vector3_t;
 #pragma pack(pop)
 
+struct fVehicle {
+	Hash hash;
+	std::string name;
+	std::string uName;
+};
+
 struct Blip_t {
 public:
 	__int32 iID; //0x0000 

@@ -132,10 +132,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="D:\Source\FW1FontWrapper\FW1FontWrapper.lib">
+    <Library Include="Poly\capstone.lib">
       <Filter>Resource Files</Filter>
     </Library>
-    <Library Include="Poly\capstone.lib">
+    <Library Include="D:\Source\AdLibs\FW1FontWrapper\FW1FontWrapper.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>

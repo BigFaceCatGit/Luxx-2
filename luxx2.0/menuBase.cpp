@@ -625,16 +625,17 @@ namespace NativeMenu {
 		return vehicle;
 	}*/
 
-	bool CMenu::AddFavourite(Hash model) {
+	bool CMenu::AddFavourite(Hash model, std::string name) {
 
-		if (std::find(p_vehicle->fVehicles.begin(), p_vehicle->fVehicles.end(), model) != p_vehicle->fVehicles.end()) {
+		if (0/*std::find(p_vehicle->fVehicles.begin(), p_vehicle->fVehicles.end(), model) != p_vehicle->fVehicles.end()*/) {
 			/* vector already contains vehicle */
 			menuBeep("NO");
 			return false;
 		}
 		else {
 			/* vector does not contain vehicle */
-			p_vehicle->fVehicles.push_back(model );
+			p_vehicle->fVehicles.push_back({ model, name, "?"});
+			Features::CUtil::addFavourite(model, name);
 			menuBeep("OK");
 			return true;
 		}
@@ -664,7 +665,7 @@ namespace NativeMenu {
 				resetButtonState();
 
 				/* Adds Hovered vehicle to Favourite Vehicle Vector */
-				if (!AddFavourite(model))
+				if (!AddFavourite(model, name))
 					Features::CUtil::notifyError("Vehicle is already in Favourites");
 				else
 					return true;

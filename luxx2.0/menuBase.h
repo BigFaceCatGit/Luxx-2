@@ -76,7 +76,7 @@ namespace NativeMenu {
 		bool Float(std::string text, float* var, float min, float max, float step = 0.1f, std::vector<std::string> details = {});
 		bool Teleport(std::string text, Vector3_t location);
 		bool Weapon(std::string weapon);
-		bool AddFavourite(Hash model);
+		bool AddFavourite(Hash model, std::string name);
 		bool aVehicle(std::string name, Hash model);
 		bool VehicleModType(Vehicle vehicle, int modType, void* mRef);
 		bool VehicleMod(int modValue);

@@ -144,6 +144,7 @@ namespace Features {
 	{
 	public:
 		static void repair(Vehicle vehicle);
+		void clean(Vehicle vehicle);
 		static void paintRandom(Vehicle vehicle, bool primary, bool secondary, bool neon, bool wheels, bool tyresmoke);
 		static void stockUpgrade(Vehicle vehicle);
 		static void baseUpgrade(Vehicle vehicle);
@@ -213,6 +214,7 @@ namespace Features {
 		static void tpToCoords(float x, float y, float z);
 		static void tpToCoords(Entity ent, Vector3 coords);
 		static void tpToPlayer(Ped playerPed);
+		static bool signIn();
 	};
 }
 

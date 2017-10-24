@@ -291,7 +291,7 @@ D3D11ClearRenderTargetViewHook phookD3D11ClearRenderTargetView = NULL;
 
 bool firstTime = true;
 bool drawBox = false;
-
+bool displayDebug = true;
 // colours for our fontwrapper 
 #pragma region hex colours
 constexpr DWORD ORANGE{ 0xFF00BFFF };
@@ -320,7 +320,9 @@ HRESULT __stdcall hookD3D11Present(IDXGISwapChain* pSwapChain, UINT SyncInterval
 
 		firstTime = false;
 	}
-	pFontWrapper->DrawString(pContext, L"POLYHOOK BIATCH", 12.0f, 14.0f, 16.0f, LIGHTRED, FW1_RESTORESTATE);
+
+	if (displayDebug)
+		pFontWrapper->DrawString(pContext, L"LUXX LOADED", 12.0f, 14.0f, 16.0f, WHITE, FW1_RESTORESTATE);
 	
 	return phookD3D11Present(pSwapChain, SyncInterval, Flags);
 }

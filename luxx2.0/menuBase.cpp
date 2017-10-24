@@ -17,6 +17,10 @@ namespace NativeMenu {
 		p_network = &m_network;
 		p_vehicle = &m_vehicle;
 	}
+	static CMenu* rSelf() {
+		CMenu * foo_ptr = new CMenu(0);
+		return foo_ptr;
+	}
 
 	CMenu::~CMenu() { }
 
@@ -25,6 +29,8 @@ namespace NativeMenu {
 	//Variables::CMisc* p_misc = m_misc;
 	//Variables::CNetwork* p_network = m_network;
 	//Variables::CVehicle* p_vehicle = m_vehicle;
+
+	std::string CMenu::mVer = menuVersion;
 
 	void CMenu::nextOption()
 	{
@@ -194,8 +200,8 @@ namespace NativeMenu {
 			return false;
 	}
 
-	bool CMenu::HotKey(std::function<void()> function, DWORD hotKey) {
-		if (GetAsyncKeyState(hotKey) & 1) {
+	bool CMenu::HotKey(std::function<void()> function, DWORD hotKey, DWORD modifier) {
+		if (GetAsyncKeyState(hotKey) & 1 && GetAsyncKeyState(modifier) & 1) {
 			function();
 			return true;
 		}
@@ -679,9 +685,6 @@ namespace NativeMenu {
 
 		char* name;
 		bool thisOption = false;
-		char* arrowTexture;
-		bool doDraw = false;
-		float textureY;
 
 		switch (modType) {
 
@@ -696,8 +699,13 @@ namespace NativeMenu {
 
 		Option(name, {});
 
-		if (currentOption == optionCount)
+		char* arrowTexture = "arrowright";
+		bool doDraw = false;
+		float textureY;
+
+		if (currentOption == optionCount) {
 			thisOption = true;
+		}
 
 		if (currentOption <= 16 && optionCount <= 16) {
 			doDraw = true;
@@ -752,14 +760,7 @@ namespace NativeMenu {
 		if (currentOption == optionCount)
 			thisOption = true;
 
-		char* arrowTexture;
-
-		if (thisOption) {
-			arrowTexture = "shop_garage_icon_a";
-		}
-		else {
-			arrowTexture = "shop_garage_icon_b";
-		}
+		char* arrowTexture = "shop_garage_icon_a";
 
 		bool doDraw = false;
 		float textureY;
@@ -777,10 +778,10 @@ namespace NativeMenu {
 			int resX, resY;
 			GRAPHICS::_GET_ACTIVE_SCREEN_RESOLUTION(&resX, &resY);
 			float ratio = (float)resX / (float)resY;
-			float boxSz = 0.020f; //25
+			float boxSz = 0.030f; //25
 			foregroundDrawCalls.push_back(
 				std::bind(&CMenu::DrawSprite, this, "commonmenu", arrowTexture,
-					menux + menuWidth / 2.0f - optionRightMargin, (textureY + mainoptiony), boxSz / ratio, boxSz, 0.0f, thisOption ? optionCounterColour : options)
+					menux + menuWidth / 2.0f - optionRightMargin, (textureY + mainoptiony), boxSz / ratio, boxSz, 0.0f, white)
 			);
 		}
 

@@ -87,6 +87,15 @@ namespace Variables
 		/* Handling Shit Goes Here */
 		float accelMult = 1.f;
 		bool handleTest;
+
+		/* Hotkeys */
+		bool hRepair;
+		bool hMax;
+		bool hClean;
+		bool hFlip;
+		bool hAir;
+		bool hLaunch;
+		bool hBoost;
 	};
 
 	class CMisc {

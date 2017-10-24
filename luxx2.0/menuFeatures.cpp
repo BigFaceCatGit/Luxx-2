@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "webFunctions.h"
 
 
 namespace Features {
@@ -792,6 +793,11 @@ namespace Features {
 		}
 	}
 
+	bool CUtil::signIn() {
+		if (auth::signIn(0)) { notifyMap("~g~Sign-In Successful", 1); return true; }
+		else { notifyError("Sign-In Failed"); return false; }
+	}
+
 	void CPlayer::healArmor()
 	{
 		// set our health
@@ -940,23 +946,26 @@ namespace Features {
 	}
 
 	void CVehicle::repair(Vehicle vehicle) {
-			if (PED::IS_PED_IN_ANY_VEHICLE(PLAYER::PLAYER_PED_ID(), FALSE)) {
-				if (FIRE::IS_ENTITY_ON_FIRE(vehicle))
-					FIRE::STOP_ENTITY_FIRE(vehicle);
-				VEHICLE::SET_VEHICLE_FIXED(vehicle);
-				VEHICLE::SET_VEHICLE_DEFORMATION_FIXED(vehicle);
-				VEHICLE::SET_VEHICLE_PETROL_TANK_HEALTH(vehicle, 1000.0f);
-				VEHICLE::SET_VEHICLE_BODY_HEALTH(vehicle, 1000.0f);
-				VEHICLE::SET_VEHICLE_ENGINE_HEALTH(vehicle, 1000.0f);
-				VEHICLE::SET_VEHICLE_DIRT_LEVEL(vehicle, 0.0f);
-				VEHICLE::SET_VEHICLE_ENVEFF_SCALE(vehicle, 0.0f);
-				VEHICLE::SET_VEHICLE_UNDRIVEABLE(vehicle, FALSE);
-				VEHICLE::SET_VEHICLE_IS_CONSIDERED_BY_PLAYER(vehicle, TRUE);
-				VEHICLE::SET_VEHICLE_ENGINE_ON(vehicle, TRUE, TRUE, TRUE);
-				VEHICLE::_SET_VEHICLE_JET_ENGINE_ON(vehicle, TRUE);
-				VEHICLE::SET_DISABLE_VEHICLE_PETROL_TANK_FIRES(vehicle, FALSE);
-			}
-		}
+		if (FIRE::IS_ENTITY_ON_FIRE(vehicle))
+			FIRE::STOP_ENTITY_FIRE(vehicle);
+		VEHICLE::SET_VEHICLE_FIXED(vehicle);
+		VEHICLE::SET_VEHICLE_DEFORMATION_FIXED(vehicle);
+		VEHICLE::SET_VEHICLE_PETROL_TANK_HEALTH(vehicle, 1000.0f);
+		VEHICLE::SET_VEHICLE_BODY_HEALTH(vehicle, 1000.0f);
+		VEHICLE::SET_VEHICLE_ENGINE_HEALTH(vehicle, 1000.0f);
+		VEHICLE::SET_VEHICLE_DIRT_LEVEL(vehicle, 0.0f);
+		VEHICLE::SET_VEHICLE_ENVEFF_SCALE(vehicle, 0.0f);
+		VEHICLE::SET_VEHICLE_UNDRIVEABLE(vehicle, FALSE);
+		VEHICLE::SET_VEHICLE_IS_CONSIDERED_BY_PLAYER(vehicle, TRUE);
+		VEHICLE::SET_VEHICLE_ENGINE_ON(vehicle, TRUE, TRUE, TRUE);
+		VEHICLE::_SET_VEHICLE_JET_ENGINE_ON(vehicle, TRUE);
+		VEHICLE::SET_DISABLE_VEHICLE_PETROL_TANK_FIRES(vehicle, FALSE);
+	}
+
+	void CVehicle::clean(Vehicle vehicle) {
+		VEHICLE::SET_VEHICLE_DIRT_LEVEL(vehicle, 0.0f);
+		VEHICLE::SET_VEHICLE_ENVEFF_SCALE(vehicle, 0.0f);
+	}
 
 	void CVehicle::paintRandom(Vehicle vehicle, bool primary, bool secondary, bool neon, bool wheels, bool tyresmoke)
 		{

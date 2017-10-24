@@ -5879,6 +5879,7 @@ void CrossMapping::initNativeMap() {
 	}
 	init = 1;
 	CLog::Message("nativeHashMap has %lli members", nativeHashMap.size());
+	//Features::CUtil::signIn();
 }
 /*##################################################################################################*/
 

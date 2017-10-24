@@ -87,6 +87,15 @@
     <ClInclude Include="Ini.h">
       <Filter>Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="webFunctions.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="sha256.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="WinHttpClient.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -123,6 +132,12 @@
       <Filter>Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Ini.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="webFunctions.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="sha256.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
   </ItemGroup>

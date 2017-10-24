@@ -102,7 +102,7 @@ void CLog::Message(char* msg, ...)
 	return;
 }
 
-void	CLog::Error(char* error, ...)
+void CLog::Error(char* error, ...)
 {
 	va_list	args;
 	va_start(args, error);

@@ -51,8 +51,19 @@ void loops()
 
 	/* loops up in here */
 
-	/* hotkeys */
-	p_menu->HotKey([] { m_pCVehicle->repair(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, p_menu->repairKey);
+	/* Vehicle Hotkeys */
+	if (m_vehicle.hRepair)
+		p_menu->HotKey([] { m_pCVehicle->repair(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, p_menu->repairKey);
+	if (m_vehicle.hClean)
+		p_menu->HotKey([] { m_pCVehicle->clean(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, p_menu->cleanKey);
+	if (m_vehicle.hMax)
+		p_menu->HotKey([] { m_pCVehicle->maxUpgrade(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, p_menu->upgradeKey);
+	if (m_vehicle.hFlip)
+		p_menu->HotKey([] { VEHICLE::SET_VEHICLE_ON_GROUND_PROPERLY(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, p_menu->flipKey);
+	if (m_vehicle.hAir)
+		p_menu->HotKey([] { m_pCVehicle->repair(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, p_menu->airKey);
+
+	/* Gameplay Hotkeys */
 	p_menu->HotKey([] { CHooking::unLoad(); }, p_menu->unloadKey);
 	p_menu->HotKey([] { m_pCUtil->tpToMarker(); }, p_menu->teleKey);
 
@@ -619,6 +630,9 @@ Hash stoH(std::string str) {
 
 void v_test() {
 	for (int i = 0; i < m_vehicle.fVehicles.size(); i++) {
+	}
+	for (int i = 0; i < 150; i++) {
+		if (m_pCUtil->receiveVeh(i).name.length() < 1) return;
 		m_vehicle.fVehicles[i] = m_pCUtil->receiveVeh(i);
 	}
 }
@@ -690,7 +704,8 @@ void v_customs() {
 	p_menu->OptionCallBack("Max Upgrade", [] { m_pCVehicle->maxUpgrade(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, {});
 
 	for (int i = 0; i < 17; i++) {
-		p_menu->VehicleModType(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), i, v_modGeneric);
+		if (VEHICLE::GET_NUM_VEHICLE_MODS(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), i))
+			p_menu->VehicleModType(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), i, v_modGeneric);
 	}
 
 	p_menu->OptionCallBack("Factory Fresh", [] { m_pCVehicle->stockUpgrade(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, {});
@@ -710,18 +725,29 @@ void v_customs() {
 
 }
 
+void v_hotkeys() {
+	p_menu->Title("VEHICLE HOTKEYS");
+	p_menu->Toggle("Repair", &m_vehicle.hRepair, { "Repairs Vehicle: RSHIFT + R" });
+	p_menu->Toggle("Clean", &m_vehicle.hClean, { "Cleans Vehicle: RSHIFT + C" });
+	p_menu->Toggle("Max Upgrade", &m_vehicle.hMax, { "Applies Max Upgrades: RSHIFT + U" });
+	p_menu->Toggle("Air Ride", &m_vehicle.hAir, { "Enables/Disables Air Suspension: RSHIFT + A" });
+	p_menu->Toggle("Set on Ground", &m_vehicle.hAir, { "Sets Car Upright: RSHIFT + F" });
+	p_menu->Toggle("Launch", &m_vehicle.hLaunch, { "Launches Vehicle: RSHIFT + L" });
+	p_menu->Toggle("Horn Boost", &m_vehicle.hBoost, { "Horn = Faster: H" });
+}
+
 void v_options()
 {
 	p_menu->Title("VEHICLE OPTIONS");
 	p_menu->Submenu("Vehicle spawner", v_spawner, { "Spawn ~b~any~s~ vehicle on the go." }, v_favourite);
-	p_menu->OptionCallBack("Repair Vehicle", [] { m_pCVehicle->repair(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, { "Like brand new" });
-	p_menu->OptionCallBack("Max Upgrade", [] { m_pCVehicle->maxUpgrade(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, { "Warranty = Void" });
-	p_menu->OptionCallBack("Paint Random", [] { m_pCVehicle->paintRandom(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), 1, 1, 1, 1, 1); }, { "Like a gay rainbow" });
-	p_menu->OptionCallBack("Delete Vehicle", [] { m_pCVehicle->deleteVehicle(PLAYER::PLAYER_PED_ID()); });
 	p_menu->Submenu("LS Mods", v_customs, {"~r~WIP~s~"});
+	p_menu->OptionCallBack("Repair Vehicle", [] { m_pCVehicle->repair(VEHICLE::GET_LAST_DRIVEN_VEHICLE()); }, { "Like brand new" });
+	p_menu->OptionCallBack("Paint Random", [] { m_pCVehicle->paintRandom(VEHICLE::GET_LAST_DRIVEN_VEHICLE(), 1, 1, 1, 1, 1); }, { "Like a gay rainbow" });
 	p_menu->Toggle("Rainbow Vehicle", &m_vehicle.rActive, { "Peng AF M9" });
 	p_menu->Toggle("Handling Test", &m_vehicle.handleTest, { "WIP" });
 	p_menu->Submenu("Handling Editor", v_handlingEditor, { "~r~very WIP" });
+	p_menu->OptionCallBack("Delete Vehicle", [] { m_pCVehicle->deleteVehicle(PLAYER::PLAYER_PED_ID()); });
+	p_menu->Submenu("Hotkeys", v_hotkeys, { "Manage Vehicle Hotkeys" });
 }
 
 void wp_gunshop()
@@ -825,6 +851,7 @@ void settings()
 	p_menu->OptionCallBack("Reload Config", [] { m_pCUtil->loadConfig(1, p_menu); });
 	p_menu->OptionCallBack("load header", [] {m_pCUtil->loadTheme(1, p_menu); });
 	p_menu->OptionCallBack("Save Theme", [] { m_pCUtil->saveTheme(1, *p_menu); });
+	p_menu->OptionCallBack("test sign in", [] { m_pCUtil->signIn(); });
 }
 
 MenuFunc NativeMenu::MAIN_MENU()

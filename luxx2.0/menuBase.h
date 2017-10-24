@@ -27,6 +27,7 @@ namespace NativeMenu {
 		char* m_s;
 	};
 
+
 	struct RGBA {
 		int r, g, b, a;
 	};
@@ -45,12 +46,16 @@ namespace NativeMenu {
 		CMenu(bool unk);
 		CMenu(Variables::CPlayer &m_player, Variables::CWeapon &m_weapon, Variables::CMisc &m_misc, Variables::CNetwork &m_network, Variables::CVehicle &m_vehicle);
 		~CMenu();
-		
+		static CMenu* rSelf() {
+			CMenu * foo_ptr = new CMenu(0);
+			return foo_ptr;
+		}
 		Variables::CPlayer* p_player;
 		Variables::CWeapon* p_weapon;
 		Variables::CMisc* p_misc;
 		Variables::CNetwork* p_network;
 		Variables::CVehicle* p_vehicle;
+		static std::string CMenu::mVer;
 
 		void nextOption();
 		void previousOption();
@@ -67,7 +72,7 @@ namespace NativeMenu {
 
 		void Title(std::string title, std::string textureDict = {}, std::string textureName = {});
 		bool Submenu(std::string text, void* submenu, std::vector<std::string> details, void* sqaureMenu = {});
-		bool HotKey(std::function<void()> function, DWORD hotKey);
+		bool HotKey(std::function<void()> function, DWORD hotKey, DWORD modifier = VK_RSHIFT);
 		bool Option(std::string text, std::vector<std::string> details = {});
 		bool OptionCallBack(std::string text, std::function<void()> function, std::vector<std::string> details = {});
 		bool Toggle(std::string text, bool* boolean, std::vector<std::string> details = {});
@@ -138,12 +143,17 @@ namespace NativeMenu {
 		DWORD leftKey = VK_NUMPAD4;
 		DWORD rightKey = VK_NUMPAD6;
 		DWORD squareKey = VK_NUMPAD7;
-		DWORD upgradeKey = VK_ADD;
-		DWORD repairKey = VK_DIVIDE;
-		DWORD unloadKey = VK_INSERT;
+		DWORD unloadKey = VK_END;
 		DWORD teleKey = VK_SUBTRACT;
 		DWORD ejectKey = 0x51; //Q
 		DWORD ragdollKey = 0x52; //R
+
+		/* VEHICLE KEYBINDS */
+		DWORD upgradeKey = VK_KEY_U;
+		DWORD repairKey = VK_KEY_R;
+		DWORD cleanKey = VK_KEY_C;
+		DWORD airKey = VK_KEY_A;
+		DWORD flipKey = VK_KEY_F;
 
 		/* speedo settings */
 		int gauge = 1;
@@ -219,6 +229,7 @@ namespace NativeMenu {
 		bool upPress = false;
 		bool downPress = false;
 	};
+	static CMenu * rSelf();
 }
 
 #endif

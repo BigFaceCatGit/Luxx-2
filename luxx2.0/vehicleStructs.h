@@ -1,6 +1,60 @@
 #ifndef _VEHICLE_STRUCTS
 #define _VEHICLE_STRUCTS
 
+
+static struct {
+	std::string Name;
+	Hash Hash;
+} BikeHash[48] = {
+	{ "Akuma", VEHICLE_AKUMA },
+	{ "Avarus", VEHICLE_AVARUS },
+	{ "Bagger", VEHICLE_BAGGER },
+	{ "Bati 801", VEHICLE_BATI },
+	{ "Bati 801RR", VEHICLE_BATI2 },
+	{ "BF400", VEHICLE_BF400 },
+	{ "Carbon RS", VEHICLE_CARBONRS },
+	{ "Chimera", VEHICLE_CHIMERA },
+	{ "Cliffhanger", VEHICLE_CLIFFHANGER } ,
+	{ "Daemon", VEHICLE_DAEMON },
+	{ "Daemon Custom", VEHICLE_DAEMON2 },
+	{ "Defilier", VEHICLE_DEFILER },
+	{ "Diabolus", VEHICLE_DIABOLUS },
+	{ "Diabolus Custom", VEHICLE_DIABOLUS2 },
+	{ "Double-T", VEHICLE_DOUBLE },
+	{ "Enduro", VEHICLE_ENDURO },
+	{ "Esskey", VEHICLE_ESSKEY },
+	{ "Faggio", VEHICLE_FAGGIO2 },
+	{ "Faggio Sport", VEHICLE_FAGGIO },
+	{ "Faggio Mod", VEHICLE_FAGGIO3 },
+	{ "FCR 1000", VEHICLE_FCR },
+	{ "FCR 1000 Custom", VEHICLE_FCR2 },
+	{ "Gargoyle", VEHICLE_GARGOYLE },
+	{ "Hakachou", VEHICLE_HAKUCHOU },
+	{ "Hakachou Drag", VEHICLE_HAKUCHOU2 },
+	{ "Hexer", VEHICLE_HEXER },
+	{ "Innovation", VEHICLE_INNOVATION },
+	{ "Lectro", VEHICLE_LECTRO },
+	{ "Manchez", VEHICLE_MANCHEZ },
+	{ "Nemesis", VEHICLE_NEMESIS },
+	{ "Nightblade", VEHICLE_NIGHTBLADE },
+	{ "Oppressor", VEHICLE_OPPRESSOR },
+	{ "PCJ 600", VEHICLE_PCJ },
+	{ "Rat Bike", VEHICLE_RATBIKE },
+	{ "Ruffian", VEHICLE_RUFFIAN },
+	{ "Sanchez", VEHICLE_SANCHEZ2 },
+	{ "Sanchez (Livery)", VEHICLE_SANCHEZ },
+	{ "Sanctus", VEHICLE_SANCTUS },
+	{ "Shotaro", VEHICLE_SHOTARO },
+	{ "Sovereign", VEHICLE_SOVEREIGN },
+	{ "Thrust", VEHICLE_THRUST },
+	{ "Vader", VEHICLE_VADER },
+	{ "Vindicator", VEHICLE_VINDICATOR },
+	{ "Vortex", VEHICLE_VORTEX },
+	{ "Wolfsbane", VEHICLE_WOLFSBANE },
+	{ "Zombie Bobber", VEHICLE_ZOMBIEA },
+	{ "Zombie Chopper", VEHICLE_ZOMBIEB },
+};
+
 static struct {
 	std::string Name;
 	Hash Hash;
@@ -166,7 +220,24 @@ static struct {
 static struct {
 	std::string Name;
 	Hash Hash;
-} MuscleHash[] = {
+} IndustrialHash[11] = {
+	{ "Dozer", VEHICLE_BULLDOZER },
+	{ "Cutter", VEHICLE_CUTTER },
+	{ "Dump", VEHICLE_DUMP },
+	{ "Flatbed", VEHICLE_FLATBED },
+	{ "Guardian", VEHICLE_GUARDIAN },
+	{ "Handler", VEHICLE_HANDLER },
+	{ "Mixer", VEHICLE_MIXER },
+	{ "Mixer (Clean)", VEHICLE_MIXER2 },
+	{ "Rubble", VEHICLE_RUBBLE },
+	{ "Tipper (Small)", VEHICLE_TIPTRUCK },
+	{ "Tipper", VEHICLE_TIPTRUCK2 }
+};
+
+static struct {
+	std::string Name;
+	Hash Hash;
+} MuscleHash[37] = {
 
 	{ "Blade", VEHICLE_BLADE },
 	{ "Buccaneer", VEHICLE_BUCCANEER },
@@ -207,6 +278,48 @@ static struct {
 	{ "Voodoo (Rusty)", VEHICLE_VOODOO2 },
 };
 
+/*OFFROAD*/
+static struct {
+	std::string Name;
+	Hash Hash;
+} OffroadHash[35] = {
+	{ "BF Injection", VEHICLE_BFINJECTION }, 
+	{ "Bifta", VEHICLE_BIFTA }, 
+	{ "Blazer", VEHICLE_BLAZER }, 
+	{ "Blazer Aqua", VEHICLE_BLAZER5 }, 
+	{ "Lifeguard Blazer", VEHICLE_BLAZER2 },
+	{ "Street Blazer", VEHICLE_BLAZER4 }, 
+	{ "Hotrod Blazer", VEHICLE_BLAZER3 },
+	{ "Bodhi", VEHICLE_BODHI2 }, 
+	{ "Brawler", VEHICLE_BRAWLER }, 
+	{ "Desert Raid", VEHICLE_TROPHYTRUCK2 },
+	{ "Duneloader", VEHICLE_DLOADER },
+	{ "Dubsta 6x6", VEHICLE_DUBSTA3 },
+	{ "Dune", VEHICLE_DUNE }, 
+	{ "Dune", VEHICLE_DUNE3 },
+	{ "Insurgent (Mounted Gun)", VEHICLE_INSURGENT },
+	{ "Insurgent (Transport)", VEHICLE_INSURGENT2 },
+	{ "Insurgent", VEHICLE_INSURGENT3 }, 
+	{ "Kalahari", VEHICLE_KALAHARI },
+	{ "The Liberator", VEHICLE_MONSTER },
+	{ "Marshall", VEHICLE_MARSHALL }, 
+	{ "Merryweather Mesa", VEHICLE_MESA3 }, 
+	{ "Nightshark", VEHICLE_NIGHTSHARK },
+	{ "Ramp Buggy Custom", VEHICLE_DUNE4 }, 
+	{ "Ramp Buggy", VEHICLE_DUNE5 },
+	{ "Rancher XL", VEHICLE_RANCHERXL },
+	{ "Rancher XL (Snowy)", VEHICLE_RANCHERXL2 },
+	{ "Rebel (Rusty)", VEHICLE_REBEL }, 
+	{ "Rebel", VEHICLE_REBEL2 }, 
+	{ "Sandking XL", VEHICLE_SANDKING },
+	{ "Sandking SWB", VEHICLE_SANDKING2 },
+	{ "Spacedocker", VEHICLE_DUNE2 },
+	{ "Technical", VEHICLE_TECHNICAL },
+	{ "Technical Aqua", VEHICLE_TECHNICAL2 }, 
+	{ "Technical Custom", VEHICLE_TECHNICAL3 },
+	{ "Trophy Truck", VEHICLE_TROPHYTRUCK }, 
+};
+
 static struct {
 	std::string Name;
 	Hash Hash;
@@ -245,10 +358,14 @@ static struct {
 	{ "Vestra", VEHICLE_VESTRA },
 };
 
+/*SEDANS*/
+
+/*SERVICE*/
+
 static struct {
 	std::string Name;
 	Hash Hash;
-} SportHash[] = {
+} SportHash[45] = {
 
 	{ "Alpha", VEHICLE_ALPHA },
 	{ "Banshee", VEHICLE_BANSHEE },
@@ -300,7 +417,7 @@ static struct {
 static struct {
 	std::string Name;
 	Hash Hash;
-} SportsClassic[] = {
+} SportsClassic[26] = {
 
 	{ "Ardent", VEHICLE_ARDENT },
 	{ "Casco", VEHICLE_CASCO },
@@ -333,7 +450,7 @@ static struct {
 static struct {
 	std::string Name;
 	Hash Hash;
-} SuperHash[] = {
+} SuperHash[32] = {
 
 	{ "Pfister 811", VEHICLE_PFISTER },
 	{ "Adder", VEHICLE_ADDER },
@@ -369,11 +486,18 @@ static struct {
 	{ "Zentorno", VEHICLE_ZENTORNO },
 };
 
+/*SUVS*/
+
+/*VANS*/
+
+/*UTILITY*/
+
+/*TRAILERS*/
 
 static struct {
 	std::string Name;
 	Hash Hash;
-} Gunrunning[] = {
+} Gunrunning[16] = {
 	{ "APC", VEHICLE_APC }, //apc
 	{ "Ardent", VEHICLE_ARDENT }, //ardent
 	{ "Caddy 3", VEHICLE_CADDY3 }, //caddy3

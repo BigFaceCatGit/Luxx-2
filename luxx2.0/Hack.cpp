@@ -557,22 +557,23 @@ void muscleCars() {
 }
 
 void sedanCars() {
-	p_menu->Title("SUPER CARS");
+	p_menu->Title("SEDANS");
 	for (auto vehicle : SuperHash) p_menu->aVehicle(vehicle.Name, vehicle.Hash);
 }
 
 void suvCars() {
-	p_menu->Title("SUPER CARS");
+	p_menu->Title("SUVS");
 	for (auto vehicle : SuperHash) p_menu->aVehicle(vehicle.Name, vehicle.Hash);
 }
 
 void offroadCars() {
-	p_menu->Title("SUPER CARS");
-	for (auto vehicle : SuperHash) p_menu->aVehicle(vehicle.Name, vehicle.Hash);
+	p_menu->Title("OFFROAD");
+	for (auto vehicle : OffroadHash) p_menu->aVehicle(vehicle.Name, vehicle.Hash);
 }
 
 void motorCycles() {
-
+	p_menu->Title("MOTORCYCLES");
+	for (auto vehicle : BikeHash) p_menu->aVehicle(vehicle.Name, vehicle.Hash);
 }
 
 void planes() {
@@ -590,10 +591,6 @@ void vansCars() {
 
 }
 
-void militaryCars() {
-
-}
-
 void utilityCars() {
 
 }
@@ -603,7 +600,8 @@ void serviceCars() {
 }
 
 void industrialCars() {
-
+	p_menu->Title("INDUSTRIAL");
+	for (auto vehicle : IndustrialHash) p_menu->aVehicle(vehicle.Name, vehicle.Hash);
 }
 
 void trailers() {
@@ -664,7 +662,6 @@ void v_spawner()
 	p_menu->Submenu("Boats", boats, {});//13
 	p_menu->Submenu("Vans", vansCars, {});//13
 	p_menu->Submenu("Commercial", commercialCars, {});//14
-	p_menu->Submenu("Military", militaryCars, {});//15
 	p_menu->Submenu("Emergency", emergencyCars, {});//16
 	p_menu->Submenu("Utility", utilityCars, {});//17
 	p_menu->Submenu("Service", serviceCars, {});//18
@@ -730,8 +727,8 @@ void v_hotkeys() {
 	p_menu->Toggle("Repair", &m_vehicle.hRepair, { "Repairs Vehicle: RSHIFT + R" });
 	p_menu->Toggle("Clean", &m_vehicle.hClean, { "Cleans Vehicle: RSHIFT + C" });
 	p_menu->Toggle("Max Upgrade", &m_vehicle.hMax, { "Applies Max Upgrades: RSHIFT + U" });
-	p_menu->Toggle("Air Ride", &m_vehicle.hAir, { "Enables/Disables Air Suspension: RSHIFT + A" });
-	p_menu->Toggle("Set on Ground", &m_vehicle.hAir, { "Sets Car Upright: RSHIFT + F" });
+	p_menu->Toggle("Air Ride", &m_vehicle.hAir, { "Toggles Air Suspension: RSHIFT + A" });
+	p_menu->Toggle("Set on Ground", &m_vehicle.hFlip, { "Sets Car Upright: RSHIFT + F" });
 	p_menu->Toggle("Launch", &m_vehicle.hLaunch, { "Launches Vehicle: RSHIFT + L" });
 	p_menu->Toggle("Horn Boost", &m_vehicle.hBoost, { "Horn = Faster: H" });
 }
